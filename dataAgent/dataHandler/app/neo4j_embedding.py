@@ -90,7 +90,7 @@ def main():
         pass  # 先清空
 
     # 初始化 embedding 模型
-    model = SentenceTransformer("all-MiniLM-L6-v2")  # 384 维
+    model = SentenceTransformer("BAAI/bge-large-zh-v1.5")  # 1024 维
     emb_dim = model.get_sentence_embedding_dimension()
 
     # 初始化 Milvus，导入前先清空 collection
