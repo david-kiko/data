@@ -1,0 +1,9 @@
+server:
+  port: 18086
+
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:dm://192.168.30.213:5236}
+    username: ${SPRING_DATASOURCE_USERNAME:SYSDBA}
+    password: ${SPRING_DATASOURCE_PASSWORD:dameng12345}
+    driver-class-name: dm.jdbc.driver.DmDriver 

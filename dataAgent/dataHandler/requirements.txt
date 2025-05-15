@@ -1,0 +1,7 @@
+requests
+fastapi
+uvicorn
+neo4j>=5.15.0
+pymilvus>=2.3.0
+sentence-transformers
+# 其它依赖请根据实际项目需要补充 

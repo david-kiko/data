@@ -1,0 +1,578 @@
+app:
+  description: ''
+  icon: 🤖
+  icon_background: '#FFEAD5'
+  mode: advanced-chat
+  name: 规则维护
+  use_icon_as_answer_icon: false
+dependencies:
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/deepseek:0.0.5@fd6efd37c2a931911de8ab9ca3ba2da303bef146d45ee87ad896b04b36d09403
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/siliconflow:0.0.8@217f973bd7ced1b099c2f0c669f1356bdf4cc38b8372fd58d7874f9940b95de3
+kind: app
+version: 0.1.5
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      allowed_file_extensions:
+      - .JPG
+      - .JPEG
+      - .PNG
+      - .GIF
+      - .WEBP
+      - .SVG
+      allowed_file_types:
+      - image
+      allowed_file_upload_methods:
+      - local_file
+      - remote_url
+      enabled: false
+      fileUploadConfig:
+        audio_file_size_limit: 50
+        batch_count_limit: 5
+        file_size_limit: 15
+        image_file_size_limit: 10
+        video_file_size_limit: 100
+        workflow_file_upload_limit: 10
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+      number_limits: 3
+    opening_statement: ''
+    retriever_resource:
+      enabled: true
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+  graph:
+    edges:
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: start
+        targetType: http-request
+      id: 1744081729157-source-1744081745903-target
+      source: '1744081729157'
+      sourceHandle: source
+      target: '1744081745903'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: http-request
+        targetType: llm
+      id: 1744081745903-source-llm-target
+      source: '1744081745903'
+      sourceHandle: source
+      target: llm
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: llm
+        targetType: if-else
+      id: llm-source-1744093273858-target
+      source: llm
+      sourceHandle: source
+      target: '1744093273858'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: if-else
+        targetType: answer
+      id: 1744093273858-true-answer-target
+      source: '1744093273858'
+      sourceHandle: 'true'
+      target: answer
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: if-else
+        targetType: http-request
+      id: 1744093273858-false-1744093342623-target
+      source: '1744093273858'
+      sourceHandle: 'false'
+      target: '1744093342623'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: if-else
+        targetType: http-request
+      id: 1744093273858-false-1744095741649-target
+      source: '1744093273858'
+      sourceHandle: 'false'
+      target: '1744095741649'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: http-request
+        targetType: llm
+      id: 1744093342623-source-1744095826067-target
+      source: '1744093342623'
+      sourceHandle: source
+      target: '1744095826067'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: http-request
+        targetType: llm
+      id: 1744095741649-source-1744095826067-target
+      source: '1744095741649'
+      sourceHandle: source
+      target: '1744095826067'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: llm
+        targetType: http-request
+      id: 1744095826067-source-1744097841191-target
+      source: '1744095826067'
+      sourceHandle: source
+      target: '1744097841191'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: llm
+        targetType: answer
+      id: 1744095826067-source-1744096186590-target
+      selected: false
+      source: '1744095826067'
+      sourceHandle: source
+      target: '1744096186590'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    nodes:
+    - data:
+        desc: ''
+        selected: false
+        title: 开始
+        type: start
+        variables: []
+      height: 53
+      id: '1744081729157'
+      position:
+        x: 80
+        y: 282
+      positionAbsolute:
+        x: 80
+        y: 282
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: ''
+        memory:
+          query_prompt_template: '{{#sys.query#}}'
+          role_prefix:
+            assistant: ''
+            user: ''
+          window:
+            enabled: false
+            size: 50
+        model:
+          completion_params:
+            response_format: text
+          mode: chat
+          name: Qwen/Qwen2.5-72B-Instruct-128K
+          provider: langgenius/siliconflow/siliconflow
+        prompt_template:
+        - id: af4e149e-9259-4720-8737-0fbf976fdafa
+          role: system
+          text: '#角色
+
+            你是一个规则维护助手，结合输入的规则，判断用户是否需要更新规则，如果用户输入过程中有保存规则，则输出结果只看最新保存规则之后的内容，前面的内容不要看
+
+
+            #输入规则
+
+            {{#1744081745903.body#}}
+
+
+            #任务
+
+            请根据用户的输入，理解用户的输入意图
+
+            1.如果用户只是想查询列表，则直接输出规则即可
+
+            2.如果用户想更新或者删除规则，则结合输入的规则，生成新的规则，直接输出规则
+
+            3.如果用户需要保存规则，则严格输出如下格式
+
+            {"save_rules":true,"is_active":true,"rules":[{"rule_name":"规则1","rule_description":"超出控制限"},{"rule_name":"规则2","rule_description":"连续3点中有2点在中心限同一侧的B区以外"}]}
+
+            匹配上面1、2输出时，严格使用markdown的格式输出，除非用户有其他要求，并且最后输出如下文字：需要保存这些变更吗？如需保存请回复"保存规则"。
+
+            匹配3输出时，不需要任何封装，安装要求输出
+
+            '
+        selected: false
+        title: 结合现有规则及用户输入
+        type: llm
+        variables: []
+        vision:
+          enabled: false
+      height: 89
+      id: llm
+      position:
+        x: 742
+        y: 282
+      positionAbsolute:
+        x: 742
+        y: 282
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        answer: '{{#llm.text#}}
+
+          '
+        desc: ''
+        selected: false
+        title: 直接回复
+        type: answer
+        variables: []
+      height: 104
+      id: answer
+      position:
+        x: 1640
+        y: 318
+      positionAbsolute:
+        x: 1640
+        y: 318
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        authorization:
+          config: null
+          type: no-auth
+        body:
+          data:
+          - type: text
+            value: ''
+          type: none
+        desc: ''
+        headers: accept:application/json
+        method: GET
+        params: ''
+        retry_config:
+          max_retries: 3
+          retry_enabled: true
+          retry_interval: 100
+        selected: false
+        timeout:
+          max_connect_timeout: 0
+          max_read_timeout: 0
+          max_write_timeout: 0
+        title: 获取现有规则
+        type: http-request
+        url: http://192.168.0.109:8000/api/spc-rules/active
+        variables: []
+      height: 134
+      id: '1744081745903'
+      position:
+        x: 380
+        y: 282
+      positionAbsolute:
+        x: 380
+        y: 282
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        cases:
+        - case_id: 'true'
+          conditions:
+          - comparison_operator: not contains
+            id: 58af417c-54e4-44f6-af60-d1be6bd734a6
+            value: save_rules
+            varType: string
+            variable_selector:
+            - llm
+            - text
+          id: 'true'
+          logical_operator: and
+        desc: ''
+        selected: false
+        title: 判断是否保存规则
+        type: if-else
+      height: 125
+      id: '1744093273858'
+      position:
+        x: 1144
+        y: 282
+      positionAbsolute:
+        x: 1144
+        y: 282
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        authorization:
+          config: null
+          type: no-auth
+        body:
+          data:
+          - id: key-value-448
+            key: ''
+            type: text
+            value: '{{#llm.text#}}'
+          type: json
+        desc: ''
+        headers: accept:application/json
+        method: post
+        params: ''
+        retry_config:
+          max_retries: 3
+          retry_enabled: true
+          retry_interval: 100
+        selected: false
+        timeout:
+          max_connect_timeout: 0
+          max_read_timeout: 0
+          max_write_timeout: 0
+        title: 保存规则
+        type: http-request
+        url: http://192.168.0.109:8000/api/spc-rules/
+        variables: []
+      height: 134
+      id: '1744093342623'
+      position:
+        x: 1539
+        y: 466
+      positionAbsolute:
+        x: 1539
+        y: 466
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        authorization:
+          config: null
+          type: no-auth
+        body:
+          data:
+          - type: text
+            value: ''
+          type: none
+        desc: ''
+        headers: accept:application/json
+        method: GET
+        params: ''
+        retry_config:
+          max_retries: 3
+          retry_enabled: true
+          retry_interval: 100
+        selected: false
+        timeout:
+          max_connect_timeout: 0
+          max_read_timeout: 0
+          max_write_timeout: 0
+        title: 获取动态代码
+        type: http-request
+        url: http://192.168.0.109:8000/api/spc-code/active
+        variables: []
+      height: 134
+      id: '1744095741649'
+      position:
+        x: 1539
+        y: 639
+      positionAbsolute:
+        x: 1539
+        y: 639
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: ''
+        model:
+          completion_params:
+            response_format: text
+          mode: chat
+          name: deepseek-chat
+          provider: langgenius/deepseek/deepseek
+        prompt_template:
+        - id: 28090016-32e0-4cd1-8ce3-ad220e1af66c
+          role: system
+          text: "#角色\n你是一个拥护10年+工作经验的python程序员，参考动态代码的注释，结合规则描述和动态代码，重新生成一份动态代码\n\n\
+            #规则描述\n{{#llm.text#}}\n\n#动态代码\n{{#1744095741649.body#}}\n\n#任务要求\n只输出更新后的动态代码，不做其它任何输出，输出格式和动态代码格式保持一致，尽量做最小改动\n\
+            \n#输入规则描述案例\n[{\"rule_name\": \"规则1\", \"rule_description\": \"超出控制限\"\
+            }, {\"rule_name\": \"规则2\", \"rule_description\": \"连续3点中有2点在中心限同一侧的B区以外\"\
+            }, {\"rule_name\": \"规则3\", \"rule_description\": \"连续5点中有4点在中心限同一侧的C区以外\"\
+            }]\n\n#输出动态代码案例，格式保持一致\nimport json\nfrom typing import List, Dict, Any\n\
+            \ndef check_control_limits(value: float, UCL: float, LCL: float) -> bool:\n\
+            \    \"\"\"检查是否超出控制限\"\"\"\n    return value > UCL or value < LCL\n\n\
+            def get_zones(CL: float, UCL: float, LCL: float):\n    avg = (UCL - LCL)\
+            \ / 6\n    return {\n        'B_upper': (CL + 2*avg, UCL),\n        'B_lower':\
+            \ (LCL, CL - 2*avg),\n        'C_upper': (CL + avg, CL + 2*avg),\n   \
+            \     'C_lower': (CL - 2*avg, CL - avg),\n        'C_zone': (CL - avg,\
+            \ CL + avg),\n        'avg': avg\n    }\n\ndef check_rule2(data: List[float],\
+            \ index: int, zones: dict) -> bool:\n    def check_upper_b_zone(x):\n\
+            \        return x > zones['B_upper'][0]\n    def check_lower_b_zone(x):\n\
+            \        return x < zones['B_lower'][1]\n    window_size = 3\n    data_len\
+            \ = len(data)\n    for start in range(max(0, index - window_size + 1),\
+            \ min(index + 1, data_len - window_size + 1)):\n        points = data[start:start+window_size]\n\
+            \        upper_count = sum(1 for x in points if check_upper_b_zone(x))\n\
+            \        lower_count = sum(1 for x in points if check_lower_b_zone(x))\n\
+            \        if upper_count >= 2 or lower_count >= 2:\n            return\
+            \ True\n    return False\n\ndef check_rule3(data: List[float], index:\
+            \ int, zones: dict) -> bool:\n    window_size = 5\n    data_len = len(data)\n\
+            \    for start in range(max(0, index - window_size + 1), min(index + 1,\
+            \ data_len - window_size + 1)):\n        points = data[start:start+window_size]\n\
+            \        upper_count = sum(1 for x in points if x > zones['C_upper'][0])\n\
+            \        lower_count = sum(1 for x in points if x < zones['C_lower'][0])\n\
+            \        if upper_count >= 4 or lower_count >= 4:\n            return\
+            \ True\n    return False\n\ndef main(input):\n    request=json.loads(input)\n\
+            \    data = request['data']\n    UCL = request['UCL']\n    CL = request['CL']\n\
+            \    LCL = request['LCL']\n\n    zones = get_zones(CL, UCL, LCL)\n   \
+            \ outliers = []\n\n    for i, value in enumerate(data):\n        violated_rules\
+            \ = []\n        if check_control_limits(value, UCL, LCL):\n          \
+            \  violated_rules.append(\"规则1：超出控制限\")\n        if check_rule2(data,\
+            \ i, zones):\n            violated_rules.append(\"规则2：连续3点中有2点在中心限同一侧的B区以外\"\
+            )\n        if check_rule3(data, i, zones):\n            violated_rules.append(\"\
+            规则3：连续5点中有4点在中心限同一侧的C区以外\")\n        if violated_rules:\n            outliers.append({\n\
+            \                \"name\": \"；\".join(violated_rules),\n             \
+            \   \"coord\": [i, value]\n            })\n    return {\"result\": str(outliers)}"
+        selected: false
+        title: 动态生成代码
+        type: llm
+        variables: []
+        vision:
+          enabled: false
+      height: 89
+      id: '1744095826067'
+      position:
+        x: 1962
+        y: 558
+      positionAbsolute:
+        x: 1962
+        y: 558
+      selected: true
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        answer: 更新规则成功
+        desc: ''
+        selected: false
+        title: 更新规则结果输出
+        type: answer
+        variables: []
+      height: 101
+      id: '1744096186590'
+      position:
+        x: 2355
+        y: 398
+      positionAbsolute:
+        x: 2355
+        y: 398
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        authorization:
+          config: null
+          type: no-auth
+        body:
+          data:
+          - id: key-value-826
+            key: ''
+            type: text
+            value: '{{#1744095826067.text#}}'
+          type: json
+        desc: ''
+        headers: ''
+        method: post
+        params: ''
+        retry_config:
+          max_retries: 3
+          retry_enabled: true
+          retry_interval: 100
+        selected: false
+        timeout:
+          max_connect_timeout: 0
+          max_read_timeout: 0
+          max_write_timeout: 0
+        title: 保存动态代码
+        type: http-request
+        url: http://192.168.0.109:8000/api/spc-code
+        variables: []
+      height: 134
+      id: '1744097841191'
+      position:
+        x: 2350
+        y: 751
+      positionAbsolute:
+        x: 2350
+        y: 751
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    viewport:
+      x: -1886
+      y: -80
+      zoom: 1

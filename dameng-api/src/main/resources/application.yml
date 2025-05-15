@@ -1,0 +1,21 @@
+server:
+  port: 18085
+
+spring:
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:dm://localhost:5236}
+    username: ${SPRING_DATASOURCE_USERNAME:SYSDBA}
+    password: ${SPRING_DATASOURCE_PASSWORD:SYSDBA}
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
+
+springfox:
+  documentation:
+    swagger-ui:
+      enabled: true
+      path: /swagger-ui.html
+    swagger:
+      v2:
+        enabled: true
+      enabled: true 

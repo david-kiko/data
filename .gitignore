@@ -1,0 +1,18 @@
+.venv/
+**/.venv/
+.mvn/
+**/.mvn/
+logs/
+**/logs/
+images/
+**/images/
+# 其它常见忽略
+__pycache__/
+**/__pycache__/
+*.pyc
+*.pyo
+*.log
+.DS_Store
+.env
+target/
+**/target/ 

@@ -1,0 +1,844 @@
+app:
+  description: ''
+  icon: 🤖
+  icon_background: '#FFEAD5'
+  mode: advanced-chat
+  name: MOM-自然语言解析
+  use_icon_as_answer_icon: false
+dependencies:
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/deepseek:0.0.5@fd6efd37c2a931911de8ab9ca3ba2da303bef146d45ee87ad896b04b36d09403
+kind: app
+version: 0.1.5
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      allowed_file_extensions:
+      - .JPG
+      - .JPEG
+      - .PNG
+      - .GIF
+      - .WEBP
+      - .SVG
+      allowed_file_types:
+      - image
+      allowed_file_upload_methods:
+      - local_file
+      - remote_url
+      enabled: false
+      fileUploadConfig:
+        audio_file_size_limit: 50
+        batch_count_limit: 5
+        file_size_limit: 15
+        image_file_size_limit: 10
+        video_file_size_limit: 100
+        workflow_file_upload_limit: 10
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+      number_limits: 3
+    opening_statement: ''
+    retriever_resource:
+      enabled: true
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+  graph:
+    edges:
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: start
+        targetType: http-request
+      id: 1744876995318-source-1744941251848-target
+      source: '1744876995318'
+      sourceHandle: source
+      target: '1744941251848'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: http-request
+        targetType: code
+      id: 1744941251848-source-1744959957190-target
+      source: '1744941251848'
+      sourceHandle: source
+      target: '1744959957190'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: start
+        targetType: http-request
+      id: 1744876995318-source-17449637726840-target
+      source: '1744876995318'
+      sourceHandle: source
+      target: '17449637726840'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: http-request
+        targetType: code
+      id: 17449637726840-source-17449638104120-target
+      source: '17449637726840'
+      sourceHandle: source
+      target: '17449638104120'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: start
+        targetType: http-request
+      id: 1744876995318-source-17449648428070-target
+      source: '1744876995318'
+      sourceHandle: source
+      target: '17449648428070'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: http-request
+        targetType: code
+      id: 17449648428070-source-17449649099190-target
+      source: '17449648428070'
+      sourceHandle: source
+      target: '17449649099190'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: start
+        targetType: http-request
+      id: 1744876995318-source-17449661031220-target
+      source: '1744876995318'
+      sourceHandle: source
+      target: '17449661031220'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: http-request
+        targetType: code
+      id: 17449661031220-source-1744966139195-target
+      source: '17449661031220'
+      sourceHandle: source
+      target: '1744966139195'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: start
+        targetType: http-request
+      id: 1744876995318-source-17449670859520-target
+      source: '1744876995318'
+      sourceHandle: source
+      target: '17449670859520'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: http-request
+        targetType: code
+      id: 17449670859520-source-17449671167680-target
+      source: '17449670859520'
+      sourceHandle: source
+      target: '17449671167680'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: code
+        targetType: llm
+      id: 1744959957190-source-1744968277258-target
+      source: '1744959957190'
+      sourceHandle: source
+      target: '1744968277258'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: code
+        targetType: llm
+      id: 1744966139195-source-1744968277258-target
+      source: '1744966139195'
+      sourceHandle: source
+      target: '1744968277258'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: code
+        targetType: llm
+      id: 17449638104120-source-1744968277258-target
+      source: '17449638104120'
+      sourceHandle: source
+      target: '1744968277258'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: code
+        targetType: llm
+      id: 17449671167680-source-1744968277258-target
+      source: '17449671167680'
+      sourceHandle: source
+      target: '1744968277258'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: code
+        targetType: llm
+      id: 17449649099190-source-1744968277258-target
+      source: '17449649099190'
+      sourceHandle: source
+      target: '1744968277258'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: llm
+        targetType: answer
+      id: 1744968277258-source-1744968468902-target
+      source: '1744968277258'
+      sourceHandle: source
+      target: '1744968468902'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    nodes:
+    - data:
+        desc: ''
+        selected: false
+        title: 开始
+        type: start
+        variables: []
+      height: 54
+      id: '1744876995318'
+      position:
+        x: -79.6690713445879
+        y: 729.5119957844782
+      positionAbsolute:
+        x: -79.6690713445879
+        y: 729.5119957844782
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        authorization:
+          config: null
+          type: no-auth
+        body:
+          data:
+          - id: key-value-1
+            key: ''
+            type: text
+            value: '{"sql":"select t1.CTABLE_NAME, t2.CCOLUMN_NAME , t2.CDISPLAY_NAME
+              , t2.CDATA_TYPE , t2.CREFERENCE_TYPE , t2.CENUM_TYPE , t2.CUNIT_TYPE,
+              t2.CCLASSIFICATION_TYPE from MOM3_DEV.DM_TYPE_DEFINITION t1 JOIN MOM3_DEV.DM_TYPE_DEFINITION_PROPERTY
+              t2   ON t1.CCODE = t2.CTYPE_ENTITY_TYPE WHERE t1.CTABLE_NAME is null
+              order by  t1.CTABLE_NAME"}'
+          type: raw-text
+        desc: ''
+        headers: Content-Type:application/json
+        method: post
+        params: ''
+        retry_config:
+          max_retries: 3
+          retry_enabled: true
+          retry_interval: 100
+        selected: false
+        timeout:
+          max_connect_timeout: 0
+          max_read_timeout: 0
+          max_write_timeout: 0
+        title: 获取虚拟表
+        type: http-request
+        url: http://192.168.30.231:18085/api/sql/execute
+        variables: []
+      height: 110
+      id: '1744941251848'
+      position:
+        x: 447.0966325548784
+        y: 282
+      positionAbsolute:
+        x: 447.0966325548784
+        y: 282
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        code: "import json\ndef map_data_type(raw_type):\n    \"\"\"根据数据库类型映射为缩写\"\
+          \"\"\n    raw_type = raw_type.upper().split('(')[0].strip()  # 去除长度声明并标准化\n\
+          \    type_mapping = {\n        'BOOLEAN': 'b',\n        'BOOL': 'b',\n \
+          \       'DATETIME': 'dt',\n        'TIMESTAMP': 'dt',\n        'DATE': 'dt',\n\
+          \        'DECIMAL': 'f',\n        'NUMERIC': 'f',\n        'FLOAT': 'f',\n\
+          \        'DOUBLE': 'f',\n        'INTEGER': 'i',\n        'INT': 'i',\n\
+          \        'BIGINT': 'i',\n        'SMALLINT': 'i',\n        'TINYINT': 'i',\n\
+          \        'JSON': 'j',\n        'VARCHAR': 's',\n        'TEXT': 's',\n \
+          \       'CHAR': 's',\n        'STRING': 's'\n    }\n    return type_mapping.get(raw_type,\
+          \ 's')\n\ndef main(input):\n    inputs=json.loads(input)\n    grouped_tables\
+          \ = []\n    current_table = None\n    current_fields = []\n\n    for item\
+          \ in inputs:\n        table_name = item[\"CTABLE_NAME\"]\n        if table_name\
+          \ != current_table:\n            if current_table is not None:\n       \
+          \         grouped_tables.append((current_table, current_fields))\n     \
+          \       current_table = table_name\n            current_fields = []\n  \
+          \      \n        raw_data_type = item[\"CDATA_TYPE\"]\n        data_type\
+          \ = map_data_type(raw_data_type) \n        column = item[\"CCOLUMN_NAME\"\
+          ]\n        display = item[\"CDISPLAY_NAME\"]\n        enum = item[\"CENUM_TYPE\"\
+          ] if data_type == \"ENUM\" else \"\"\n        \n        if raw_data_type\
+          \ == \"REFERENCE_OBJECT\":\n            id_field = f\"{column}_ID:s:{display}:\"\
+          \n            entity_field = f\"{column}_ENTITY_TYPE:s:{display}:\"\n  \
+          \          current_fields.extend([id_field, entity_field])\n        else:\n\
+          \            enum_str = enum if enum is not None else \"\"\n           \
+          \ field = f\"{column}:{data_type}:{display}:{enum_str}\"\n            current_fields.append(field)\n\
+          \    \n    if current_table is not None:\n        grouped_tables.append((current_table,\
+          \ current_fields))\n    \n    result = []\n    for table_name, fields in\
+          \ grouped_tables:\n        table_entry = f\"{table_name}({','.join(fields)})\"\
+          \n        result.append(table_entry)\n    \n    return {\"result\":  ','.join(result)}"
+        code_language: python3
+        desc: ''
+        outputs:
+          result:
+            children: null
+            type: string
+        selected: false
+        title: 解析真实表结构
+        type: code
+        variables:
+        - value_selector:
+          - '1744941251848'
+          - body
+          variable: input
+      height: 54
+      id: '1744959957190'
+      position:
+        x: 869.9888226848607
+        y: 282
+      positionAbsolute:
+        x: 869.9888226848607
+        y: 282
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        authorization:
+          config: null
+          type: no-auth
+        body:
+          data:
+          - id: key-value-1
+            key: ''
+            type: text
+            value: '{"sql":"select t2.CTYPE_ENTITY_TYPE as CTABLE_NAME, t2.CCOLUMN_NAME
+              , t2.CDISPLAY_NAME , t2.CDATA_TYPE , t2.CREFERENCE_TYPE , t2.CENUM_TYPE
+              , t2.CUNIT_TYPE, t2.CCLASSIFICATION_TYPE from MOM3_DEV.DM_TYPE_DEFINITION
+              t1 JOIN MOM3_DEV.DM_TYPE_DEFINITION_PROPERTY t2   ON t1.CCODE = t2.CTYPE_ENTITY_TYPE
+              WHERE t1.CTABLE_NAME is null order by t2.CTYPE_ENTITY_TYPE"}'
+          type: raw-text
+        desc: ''
+        headers: Content-Type:application/json
+        method: post
+        params: ''
+        retry_config:
+          max_retries: 3
+          retry_enabled: true
+          retry_interval: 100
+        selected: false
+        timeout:
+          max_connect_timeout: 0
+          max_read_timeout: 0
+          max_write_timeout: 0
+        title: 获取虚拟表
+        type: http-request
+        url: http://192.168.30.231:18085/api/sql/execute
+        variables: []
+      height: 110
+      id: '17449637726840'
+      position:
+        x: 447.0966325548784
+        y: 524.5797240763718
+      positionAbsolute:
+        x: 447.0966325548784
+        y: 524.5797240763718
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        code: "import json\ndef map_data_type(raw_type):\n    \"\"\"根据数据库类型映射为缩写\"\
+          \"\"\n    raw_type = raw_type.upper().split('(')[0].strip()  # 去除长度声明并标准化\n\
+          \    type_mapping = {\n        'BOOLEAN': 'b',\n        'BOOL': 'b',\n \
+          \       'DATETIME': 'dt',\n        'TIMESTAMP': 'dt',\n        'DATE': 'dt',\n\
+          \        'DECIMAL': 'f',\n        'NUMERIC': 'f',\n        'FLOAT': 'f',\n\
+          \        'DOUBLE': 'f',\n        'INTEGER': 'i',\n        'INT': 'i',\n\
+          \        'BIGINT': 'i',\n        'SMALLINT': 'i',\n        'TINYINT': 'i',\n\
+          \        'JSON': 'j',\n        'VARCHAR': 's',\n        'TEXT': 's',\n \
+          \       'CHAR': 's',\n        'STRING': 's'\n    }\n    return type_mapping.get(raw_type,\
+          \ 's')\n\ndef main(input):\n    inputs=json.loads(input)\n    grouped_tables\
+          \ = []\n    current_table = None\n    current_fields = []\n\n    for item\
+          \ in inputs:\n        table_name = item[\"CTABLE_NAME\"]\n        if table_name\
+          \ != current_table:\n            if current_table is not None:\n       \
+          \         grouped_tables.append((current_table, current_fields))\n     \
+          \       current_table = table_name\n            current_fields = []\n  \
+          \      \n        raw_data_type = item[\"CDATA_TYPE\"]\n        data_type\
+          \ = map_data_type(raw_data_type) \n        column = item[\"CCOLUMN_NAME\"\
+          ]\n        display = item[\"CDISPLAY_NAME\"]\n        enum = item[\"CENUM_TYPE\"\
+          ] if data_type == \"ENUM\" else \"\"\n        \n        if raw_data_type\
+          \ == \"REFERENCE_OBJECT\":\n            id_field = f\"{column}_ID:s:{display}:\"\
+          \n            entity_field = f\"{column}_ENTITY_TYPE:s:{display}:\"\n  \
+          \          current_fields.extend([id_field, entity_field])\n        else:\n\
+          \            enum_str = enum if enum is not None else \"\"\n           \
+          \ field = f\"{column}:{data_type}:{display}:{enum_str}\"\n            current_fields.append(field)\n\
+          \    \n    if current_table is not None:\n        grouped_tables.append((current_table,\
+          \ current_fields))\n    \n    result = []\n    for table_name, fields in\
+          \ grouped_tables:\n        table_entry = f\"{table_name}({','.join(fields)})\"\
+          \n        result.append(table_entry)\n    \n    return {\"result\":  ','.join(result)}"
+        code_language: python3
+        desc: ''
+        outputs:
+          result:
+            children: null
+            type: string
+        selected: false
+        title: 解析虚拟表结构
+        type: code
+        variables:
+        - value_selector:
+          - '17449637726840'
+          - body
+          variable: input
+      height: 54
+      id: '17449638104120'
+      position:
+        x: 874.9130618898648
+        y: 524.5797240763718
+      positionAbsolute:
+        x: 874.9130618898648
+        y: 524.5797240763718
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        authorization:
+          config: null
+          type: no-auth
+        body:
+          data:
+          - id: key-value-1
+            key: ''
+            type: text
+            value: '{"sql":"SELECT CENUM_TYPE,CNAME,CVALUE FROM MOM3_DEV.DM_ENUM_VALUE
+              ORDER BY CENUM_TYPE"}'
+          type: raw-text
+        desc: ''
+        headers: Content-Type:application/json
+        method: post
+        params: ''
+        retry_config:
+          max_retries: 3
+          retry_enabled: true
+          retry_interval: 100
+        selected: false
+        timeout:
+          max_connect_timeout: 0
+          max_read_timeout: 0
+          max_write_timeout: 0
+        title: 获取枚举值
+        type: http-request
+        url: http://192.168.30.231:18085/api/sql/execute
+        variables: []
+      height: 110
+      id: '17449648428070'
+      position:
+        x: 447.0966325548784
+        y: 1153.151949107385
+      positionAbsolute:
+        x: 447.0966325548784
+        y: 1153.151949107385
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        code: "import json\ndef main(input):\n    inputs=json.loads(input)\n    grouped_enums\
+          \ = []\n    current_enum = None\n    current_fields = []\n\n    for item\
+          \ in inputs:\n        enum_name = item[\"CENUM_TYPE\"]\n        if enum_name\
+          \ != current_enum:\n            if current_enum is not None:\n         \
+          \       grouped_enums.append((current_enum, current_fields))\n         \
+          \   current_enum = enum_name\n            current_fields = []\n        \n\
+          \        value = item[\"CVALUE\"]\n        name = item[\"CNAME\"]\n    \
+          \    current_fields.append(f\"{value}:{name}\")\n    \n    if current_enum\
+          \ is not None:\n        grouped_enums.append((current_enum, current_fields))\n\
+          \    \n    result = []\n    for enum, fields in grouped_enums:\n       \
+          \ result.append(f\"{enum}({','.join(fields)})\")\n    \n    return {\"result\"\
+          :  ','.join(result)}"
+        code_language: python3
+        desc: ''
+        outputs:
+          result:
+            children: null
+            type: string
+        selected: false
+        title: 解析枚举值
+        type: code
+        variables:
+        - value_selector:
+          - '17449648428070'
+          - body
+          variable: input
+      height: 54
+      id: '17449649099190'
+      position:
+        x: 879.5078553098526
+        y: 1153.151949107385
+      positionAbsolute:
+        x: 879.5078553098526
+        y: 1153.151949107385
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        authorization:
+          config: null
+          type: no-auth
+        body:
+          data:
+          - id: key-value-1
+            key: ''
+            type: text
+            value: '{"sql":"SELECT CTABLE_NAME,CPARENT FROM MOM3_DEV.DM_TYPE_DEFINITION
+              WHERE CTABLE_NAME IS NOT NULL AND CPARENT IS NOT NULL"}'
+          type: raw-text
+        desc: ''
+        headers: Content-Type:application/json
+        method: post
+        params: ''
+        retry_config:
+          max_retries: 3
+          retry_enabled: true
+          retry_interval: 100
+        selected: false
+        timeout:
+          max_connect_timeout: 0
+          max_read_timeout: 0
+          max_write_timeout: 0
+        title: 获取表继承关系
+        type: http-request
+        url: http://192.168.30.231:18085/api/sql/execute
+        variables: []
+      height: 110
+      id: '17449661031220'
+      position:
+        x: 447.0966325548784
+        y: 729.5119957844782
+      positionAbsolute:
+        x: 447.0966325548784
+        y: 729.5119957844782
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        code: "import json\ndef main(input):\n    inputs=json.loads(input)\n    result\
+          \ = []\n    for item in inputs:\n        table_name=item['CTABLE_NAME']\n\
+          \        parent=item['CPARENT']\n        result.append(f\"{table_name} extends\
+          \ {parent}\")\n    return {\"result\":  ','.join(result)}"
+        code_language: python3
+        desc: ''
+        outputs:
+          result:
+            children: null
+            type: string
+        selected: false
+        title: 解析表继承关系
+        type: code
+        variables:
+        - value_selector:
+          - '17449661031220'
+          - body
+          variable: input
+      height: 54
+      id: '1744966139195'
+      position:
+        x: 874.9130618898648
+        y: 729.5119957844782
+      positionAbsolute:
+        x: 874.9130618898648
+        y: 729.5119957844782
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        authorization:
+          config: null
+          type: no-auth
+        body:
+          data:
+          - id: key-value-1
+            key: ''
+            type: text
+            value: '{"sql":"select t1.CCOLUMN_NAME, t2.CTABLE_NAME AS CTABLE, t3.CTABLE_NAME
+              AS RTABLE from MOM3_DEV.DM_TYPE_DEFINITION_PROPERTY t1 JOIN MOM3_DEV.DM_TYPE_DEFINITION
+              t2 ON t1.CTYPE_ENTITY_TYPE = t2.CCODE JOIN MOM3_DEV.DM_TYPE_DEFINITION
+              t3 ON t1.CREFERENCE_TYPE  = t3.CCODE WHERE t1.CREFERENCE_TYPE IS NOT
+              NULL AND t2.CTABLE_NAME IS NOT NULL AND t3.CTABLE_NAME IS NOT null;"}'
+          type: raw-text
+        desc: ''
+        headers: Content-Type:application/json
+        method: post
+        params: ''
+        retry_config:
+          max_retries: 3
+          retry_enabled: true
+          retry_interval: 100
+        selected: false
+        timeout:
+          max_connect_timeout: 0
+          max_read_timeout: 0
+          max_write_timeout: 0
+        title: 获取外键数据
+        type: http-request
+        url: http://192.168.30.231:18085/api/sql/execute
+        variables: []
+      height: 110
+      id: '17449670859520'
+      position:
+        x: 447.0966325548784
+        y: 952.593701501538
+      positionAbsolute:
+        x: 447.0966325548784
+        y: 952.593701501538
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        code: "import json\ndef main(input):\n    inputs=json.loads(input)\n    result\
+          \ = []\n    for item in inputs:\n        column_name=item['CCOLUMN_NAME']\n\
+          \        ctable=item['CTABLE']\n        rtable=item['RTABLE']\n        result.append(f\"\
+          {ctable}({column_name}_ID) REFERENCES {rtable}\")\n    return {\"result\"\
+          :  ','.join(result)}"
+        code_language: python3
+        desc: ''
+        outputs:
+          result:
+            children: null
+            type: string
+        selected: false
+        title: 解析外键数据
+        type: code
+        variables:
+        - value_selector:
+          - '17449670859520'
+          - body
+          variable: input
+      height: 54
+      id: '17449671167680'
+      position:
+        x: 869.9888226848607
+        y: 952.593701501538
+      positionAbsolute:
+        x: 869.9888226848607
+        y: 952.593701501538
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: ''
+        memory:
+          query_prompt_template: '{{#sys.query#}}'
+          role_prefix:
+            assistant: ''
+            user: ''
+          window:
+            enabled: false
+            size: 50
+        model:
+          completion_params:
+            temperature: 0.7
+          mode: chat
+          name: deepseek-chat
+          provider: langgenius/deepseek/deepseek
+        prompt_template:
+        - id: 279a2a66-afce-48c5-93c9-78858da3f4f9
+          role: system
+          text: '你是一位资深达梦数据库工程师兼SQL优化专家，拥有10年以上DBA经验。
+
+            请根据以下数据库元数据DDL和自然语言需求描述，
+
+            生成符合企业级标准的优化SQL语句。
+
+
+            数据库的元数据格式如下：
+
+            真实存在的表（物理存在，可以直接select）,多个表用逗号连接：
+
+            T:<表名>(<字段名1>:<类型>:<注释>:<枚举类型>, <字段名2>:<类型>:<注释>:<枚举类型>, ...)
+
+
+            虚拟表（物理不存在，不能直接select），多个表用逗号连接：
+
+            V:<表名>(<字段名1>:<类型>:<注释>:<枚举类型>, <字段名2>:<类型>:<注释>:<枚举类型>, ...)
+
+
+            枚举类型，多个枚举类型用逗号连接：
+
+            E:<枚举类型>(<枚举值1>:<注释>，<枚举值2>:<注释>,...)
+
+
+            表之间具有继承关系，格式如下
+
+            R:<表名> extends <表名>
+
+            如果表A extends B 代表，则代表A拥有B表的所有字段
+
+
+            字段类型缩写说明：
+
+            - b = boolean，布尔值 (对应数据库类型: BOOLEAN, BOOL)
+
+            - dt = datetime，时间戳 (对应数据库类型: DATETIME, TIMESTAMP, DATE)
+
+            - f = float，浮点数 (对应数据库类型: DECIMAL, NUMERIC, FLOAT, DOUBLE)
+
+            - i = int，整数 (对应数据库类型: INTEGER, INT, BIGINT, SMALLINT, TINYINT)
+
+            - j = json，JSON数据 (对应数据库类型: JSON)
+
+            - s = string，字符串 (对应数据库类型: VARCHAR, TEXT, CHAR, STRING)
+
+
+            DDL元数据：
+
+            T:{{#1744959957190.result#}}
+
+            V:{{#17449638104120.result#}}
+
+
+            表之间继承关系：
+
+            R:{{#17449661031220.body#}}
+
+
+            外键信息，用于表之间关联：
+
+            F:{{#17449671167680.result#}}
+
+
+            如果字段是枚举类型，则所有枚举定义如下：
+
+            E:{{#17449648428070.body#}}
+
+
+
+            ## 系统要求：
+
+            1. 必须严格嵌入提供的DDL元数据，禁止使用任何未声明的表或字段
+
+            2. 仅返回SELECT语句，禁止包含INSERT/UPDATE/DELETE等DML操作
+
+            3. 所有表名带上MOM3_DEV作为schema
+
+            4. 所有字段符合达梦数据库标识符规范'
+        - id: dfa09c1f-6559-4708-a815-c73f1a32f048
+          role: user
+          text: '{{#sys.query#}}'
+        selected: false
+        title: LLM
+        type: llm
+        variables: []
+        vision:
+          enabled: false
+      height: 90
+      id: '1744968277258'
+      position:
+        x: 1465.7582048541076
+        y: 688.6392176689503
+      positionAbsolute:
+        x: 1465.7582048541076
+        y: 688.6392176689503
+      selected: true
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        answer: '{{#1744968277258.text#}}'
+        desc: ''
+        selected: true
+        title: 直接回复
+        type: answer
+        variables: []
+      height: 105
+      id: '1744968468902'
+      position:
+        x: 1769.7582048541076
+        y: 688.6392176689503
+      positionAbsolute:
+        x: 1769.7582048541076
+        y: 688.6392176689503
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    viewport:
+      x: -954.723799613786
+      y: -256.4848880075503
+      zoom: 0.8705505632961241

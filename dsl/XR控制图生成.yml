@@ -1,0 +1,452 @@
+app:
+  description: ''
+  icon: 🤖
+  icon_background: '#FFEAD5'
+  mode: advanced-chat
+  name: XR控制图生成
+  use_icon_as_answer_icon: false
+dependencies:
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/deepseek:0.0.5@fd6efd37c2a931911de8ab9ca3ba2da303bef146d45ee87ad896b04b36d09403
+- current_identifier: null
+  type: marketplace
+  value:
+    marketplace_plugin_unique_identifier: langgenius/siliconflow:0.0.8@217f973bd7ced1b099c2f0c669f1356bdf4cc38b8372fd58d7874f9940b95de3
+kind: app
+version: 0.1.5
+workflow:
+  conversation_variables: []
+  environment_variables: []
+  features:
+    file_upload:
+      allowed_file_extensions:
+      - .JPG
+      - .JPEG
+      - .PNG
+      - .GIF
+      - .WEBP
+      - .SVG
+      allowed_file_types:
+      - image
+      allowed_file_upload_methods:
+      - local_file
+      - remote_url
+      enabled: false
+      fileUploadConfig:
+        audio_file_size_limit: 50
+        batch_count_limit: 5
+        file_size_limit: 15
+        image_file_size_limit: 10
+        video_file_size_limit: 100
+        workflow_file_upload_limit: 10
+      image:
+        enabled: false
+        number_limits: 3
+        transfer_methods:
+        - local_file
+        - remote_url
+      number_limits: 3
+    opening_statement: ''
+    retriever_resource:
+      enabled: true
+    sensitive_word_avoidance:
+      enabled: false
+    speech_to_text:
+      enabled: false
+    suggested_questions: []
+    suggested_questions_after_answer:
+      enabled: false
+    text_to_speech:
+      enabled: false
+      language: ''
+      voice: ''
+  graph:
+    edges:
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: start
+        targetType: llm
+      id: 1744094787180-source-1744098341054-target
+      source: '1744094787180'
+      sourceHandle: source
+      target: '1744098341054'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: llm
+        targetType: if-else
+      id: 1744098341054-source-1744099049501-target
+      source: '1744098341054'
+      sourceHandle: source
+      target: '1744099049501'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInLoop: false
+        sourceType: if-else
+        targetType: answer
+      id: 1744099049501-true-answer-target
+      source: '1744099049501'
+      sourceHandle: 'true'
+      target: answer
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: if-else
+        targetType: code
+      id: 1744099049501-false-1744099188836-target
+      source: '1744099049501'
+      sourceHandle: 'false'
+      target: '1744099188836'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: code
+        targetType: http-request
+      id: 1744099188836-source-1744099409390-target
+      source: '1744099188836'
+      sourceHandle: source
+      target: '1744099409390'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: http-request
+        targetType: llm
+      id: 1744099409390-source-1744099649060-target
+      source: '1744099409390'
+      sourceHandle: source
+      target: '1744099649060'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    - data:
+        isInIteration: false
+        isInLoop: false
+        sourceType: llm
+        targetType: answer
+      id: 1744099649060-source-1744099496365-target
+      source: '1744099649060'
+      sourceHandle: source
+      target: '1744099496365'
+      targetHandle: target
+      type: custom
+      zIndex: 0
+    nodes:
+    - data:
+        desc: ''
+        selected: false
+        title: 开始
+        type: start
+        variables: []
+      height: 53
+      id: '1744094787180'
+      position:
+        x: 46
+        y: 386
+      positionAbsolute:
+        x: 46
+        y: 386
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        answer: '{{#1744098341054.text#}}'
+        desc: ''
+        selected: false
+        title: 数据不全回复
+        type: answer
+        variables: []
+      height: 104
+      id: answer
+      position:
+        x: 1071
+        y: 262
+      positionAbsolute:
+        x: 1071
+        y: 262
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: ''
+        memory:
+          query_prompt_template: '{{#sys.query#}}'
+          role_prefix:
+            assistant: ''
+            user: ''
+          window:
+            enabled: false
+            size: 50
+        model:
+          completion_params:
+            response_format: text
+          mode: chat
+          name: Qwen/Qwen2.5-72B-Instruct-128K
+          provider: langgenius/siliconflow/siliconflow
+        prompt_template:
+        - id: 964edc21-f0a5-47f6-a776-f6b8c2d81e04
+          role: system
+          text: '#角色
+
+            你是一个文档提取高手，擅长从文本中提取数据，转化为json
+
+
+            #结果示例
+
+            {"write_result":{"data":[1342,1496,1446,1371,1392,1433,1321,1396,1633,1754,1425,1321,1325,1450,1342,1308],"UCL":1600,"CL":1300,"LCL":1000}}
+
+
+            其中data为样例数据，UCL为控制上限，CL为中心线，LCL为控制下限
+
+
+            #任务
+
+            请根据用户的输入，提取为示例结果，如果缺少data、UCL、CL、LCL中的任一项，则只输出文本提示用户缺少某个值，请补全数据后再次输入，不要输出其它任何东西'
+        - id: 7adfa53f-76ea-433c-b2e4-df1e6391441c
+          role: user
+          text: '{{#sys.query#}}'
+        selected: false
+        title: 解析用户输入
+        type: llm
+        variables: []
+        vision:
+          enabled: false
+      height: 89
+      id: '1744098341054'
+      position:
+        x: 365
+        y: 386
+      positionAbsolute:
+        x: 365
+        y: 386
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        cases:
+        - case_id: 'true'
+          conditions:
+          - comparison_operator: not contains
+            id: f157a892-6774-4071-869e-1291d8f11057
+            value: write_result
+            varType: string
+            variable_selector:
+            - '1744098341054'
+            - text
+          id: 'true'
+          logical_operator: and
+        desc: ''
+        selected: false
+        title: 判断必要条件是否已完整
+        type: if-else
+      height: 125
+      id: '1744099049501'
+      position:
+        x: 701.0833333333334
+        y: 386
+      positionAbsolute:
+        x: 701.0833333333334
+        y: 386
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        code: "\nimport json\ndef main(input):\n    write_result=json.loads(input)['write_result']\n\
+          \    return {\"result\": json.dumps(write_result, indent=2, ensure_ascii=False)}\n"
+        code_language: python3
+        desc: ''
+        outputs:
+          result:
+            children: null
+            type: string
+        selected: false
+        title: 提取用户结果
+        type: code
+        variables:
+        - value_selector:
+          - '1744098341054'
+          - text
+          variable: input
+      height: 53
+      id: '1744099188836'
+      position:
+        x: 1059
+        y: 566
+      positionAbsolute:
+        x: 1059
+        y: 566
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        authorization:
+          config: null
+          type: no-auth
+        body:
+          data:
+          - type: text
+            value: "{\n  \"query\": {{#1744099188836.result#}}\n}"
+          type: raw-text
+        desc: ''
+        headers: 'accept:application/json
+
+          Content-Type:application/json'
+        method: POST
+        params: ''
+        retry_config:
+          max_retries: 3
+          retry_enabled: true
+          retry_interval: 100
+        selected: false
+        timeout:
+          max_connect_timeout: 0
+          max_read_timeout: 0
+          max_write_timeout: 0
+        title: 调用沙箱代码，返回异常数据
+        type: http-request
+        url: http://192.168.0.109:8000/api/spc-analysis/
+        variables: []
+      height: 134
+      id: '1744099409390'
+      position:
+        x: 1362
+        y: 566
+      positionAbsolute:
+        x: 1362
+        y: 566
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        answer: '{{#1744099649060.text#}}'
+        desc: ''
+        selected: false
+        title: 返回结果
+        type: answer
+        variables: []
+      height: 104
+      id: '1744099496365'
+      position:
+        x: 1965
+        y: 566
+      positionAbsolute:
+        x: 1965
+        y: 566
+      selected: false
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    - data:
+        context:
+          enabled: false
+          variable_selector: []
+        desc: ''
+        model:
+          completion_params:
+            response_format: text
+          mode: chat
+          name: deepseek-chat
+          provider: langgenius/deepseek/deepseek
+        prompt_template:
+        - id: 42803bae-e5ec-4614-8f80-cdf9fdf8265d
+          role: system
+          text: "#角色\n你是一个专门生成echarts图表的高手，擅长各种echarts表格制作，请根据模板文件、用户数据和异常值，将数据填充至该填充的位置即可，只做数据填充，尽量做最小的改动，不要修改输入异常值里面的coord的内容\n\
+            \n#用户数据\n{{#1744099188836.result#}}\n\n#异常值\n{{#1744099409390.body#}}\n\
+            \n#模板文件\n{\n  xAxis: {\n    type: 'category',\n    axisTick: false,\n\
+            \    data: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]\n \
+            \ },\n  tooltip: {\n    trigger: 'item'\n  },\n  grid: {\n    right: '15%'\n\
+            \  },\n  dataZoom: [\n    {\n      type: 'slider',\n      show: true,\n\
+            \    },\n    {\n      type: 'inside',\n      zoomOnMouseWheel: true,\n\
+            \      moveOnMouseMove: false,\n      moveOnMouseWheel: false\n    }\n\
+            \  ],\n  yAxis: {\n    type: 'value',\n    max: 1800,\n    min: 900\n\
+            \  },\n  legend: {\n    show: true\n  },\n  series: [\n    {\n      name:\
+            \ '实测值',\n      data: [1342, 1496, 1446, 1371, 1392, 1433, 1321, 1396,\
+            \ 1633, 1754, 1425, 1321, 1325, 1450, 1342, 1308],\n      type: 'line',\n\
+            \      label: {\n        show: true\n      },\n      tooltip: {\n    \
+            \    trigger: 'item',\n        formatter: '点位：{b}<br/>实测值：{c}'\n     \
+            \ },\n      markLine: {\n        symbol: 'none',\n        lineStyle: {\n\
+            \          color: '#078307'\n        },\n        tooltip:{},\n       \
+            \ data: [\n          {\n            name: '平均线',\n            type: 'average',\n\
+            \            lineStyle: {\n              color: 'red'\n            },\n\
+            \            label: {\n              color: 'red'\n            }\n   \
+            \       },\n          { name: 'UCL', yAxis: 1600 },\n          { name:\
+            \ 'CL', yAxis: 1300 },\n          { name: 'LCL', yAxis: 1000 },\n    \
+            \    ],\n        label: {\n          formatter: '{b}：{c}',\n         \
+            \ color: '#078307'\n        }\n      },\n      color: '#084081',\n   \
+            \   smooth: true,\n      symbolSize: 10,\n      symbol: 'circle'\n   \
+            \ },\n    {\n      name: '异常值',\n      type: 'line',\n      symbol: 'circle',\n\
+            \      symbolSize: 14,\n      color: 'red',\n      lineStyle: {\n    \
+            \    opacity: 0\n      },\n      smooth: true,\n      markPoint: {\n \
+            \       tooltip: {\n          formatter: function(params) {\n        \
+            \    return '点位：' + (params.data.coord[0] + 1) + '<br/>' + \n        \
+            \           '实测值：' + params.data.coord[1] + '<br/>' +\n              \
+            \     params.data.name;\n           }\n        },\n        data: [\n \
+            \         {\n            name: '超过控制上限',\n            coord: [8, 1633],\n\
+            \            symbolSize: 14,\n            symbol: 'circle'\n         \
+            \ },\n          {\n            name: '超过控制上限',\n            coord: [9,\
+            \ 1754],\n            symbolSize: 14,\n            symbol: 'circle'\n\
+            \          }\n        ]\n      }\n    },\n    {\n      name: '标准值',\n\
+            \      symbol: 'circle',\n      color: '#084081',\n      type: 'line',\n\
+            \      markLine: {\n        lineStyle: {\n          color: '#4eb3d3'\n\
+            \        },\n        symbol: 'none',\n        data: [\n          { name:\
+            \ 'UCL', yAxis: 1600 },\n          { name: 'CL', yAxis: 1300 },\n    \
+            \      { name: 'LCL', yAxis: 1000 }\n        ],\n        label: {\n  \
+            \        formatter: '{b}：{c}',\n          color: '#4eb3d3'\n        }\n\
+            \      }\n    }\n  ]\n};\n\n#动态数据来源\n1.实测值的数据使用用户数据的data字段\n2.xAxis type='category'的data值从1开始，最大值为实测值的数组长度\n\
+            3.UCL、CL、LCL值直接从用户数据获取\n4.异常值data的name和coord的数据从异常数据获取\n\n#要求\n直接输出echarts图表即可，输出的时候能直接在dify中展示（即使用```echarts\\\
+            n内容\\n```包裹），不需要输出其它任何无关的文字"
+        selected: false
+        title: 生成动态图表echarts
+        type: llm
+        variables: []
+        vision:
+          enabled: false
+      height: 89
+      id: '1744099649060'
+      position:
+        x: 1665
+        y: 566
+      positionAbsolute:
+        x: 1665
+        y: 566
+      selected: true
+      sourcePosition: right
+      targetPosition: left
+      type: custom
+      width: 244
+    viewport:
+      x: -1126.92
+      y: -83.65999999999997
+      zoom: 1.44
