@@ -19,8 +19,8 @@ pip install uv
 
 2. 使用 uv 创建虚拟环境并安装依赖：
 ```bash
-# 创建虚拟环境
-uv venv
+# 创建虚拟环境，指定python版本
+uv venv --python=python3.10
 
 # 激活虚拟环境
 # Windows:
@@ -36,6 +36,16 @@ uv pip install -r requirements.txt
 ```bash
 MILVUS_HOST=192.168.30.232
 MILVUS_PORT=19530
+```
+
+4. 下载 BAAI/bge-large-zh-v1.5
+```bash
+python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('BAAI/bge-large-zh-v1.5')"
+```
+
+5. 下载 BAAI/bge-reranker-base
+```bash
+python -c "from sentence_transformers import CrossEncoder; CrossEncoder('BAAI/bge-reranker-base')"
 ```
 
 ## 运行服务
@@ -82,6 +92,15 @@ docker run -d -p 8000:8000 \
 - 容器启动后，MCP 工具服务会监听 0.0.0.0:8000，路径为 `/mcp`。
 - 你可以根据需要选择 FastAPI 或 MCP 工具服务方式。
 
+### 3. 直接本地启动 MCP 工具服务（非 Docker）
+
+```bash
+python -m app.main
+```
+
+- 这会以 MCP 工具服务（streamable-http）方式启动，监听 0.0.0.0:8000，路径为 /mcp。
+- 适合本地开发、调试或测试。
+
 ## Docker 部署
 
 ### 1. 构建镜像
@@ -114,4 +133,11 @@ docker run -d -p 8000:8000 \
 ```
 curl "http://localhost:8000/search?query=工作中心有多少条数据&top_k=5"
 curl -X POST "http://localhost:8000/mcp" -H "Content-Type: application/json" -d '{"tool": "execute_sql", "arguments": {"sql": "SELECT 1 FROM DUAL"}}'
+```
+
+## 清理 pyc 文件
+
+```bash
+find . -name "*.pyc" -delete
+find . -name "__pycache__" -type d -exec rm -rf {} +
 ```
