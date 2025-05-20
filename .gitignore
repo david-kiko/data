@@ -15,4 +15,19 @@ __pycache__/
 .DS_Store
 .env
 target/
-**/target/ 
+**/target/
+
+# 数据/模型/缓存/大文件
+all_paths.txt
+long_paths.txt
+*.tgz
+
+# Java/Maven/IDE相关
+.idea/
+.mvn/
+.mvn/wrapper/
+
+# 虚拟环境缓存
+CACHEDIR.TAG
+.lock
+pyvenv.cfg 
