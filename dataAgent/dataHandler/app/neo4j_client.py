@@ -15,7 +15,17 @@ NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD", "neo4j123")
 # 获取所有表名
 def get_all_table_names(session):
     result = session.run("MATCH (n:Table) RETURN n.name AS name")
-    return [record["name"] for record in result]
+    # 过滤掉特定前缀和后缀的表
+    filtered_tables = []
+    for record in result:
+        name = record["name"]
+        if (not name.startswith("DM_") and 
+            not name.startswith("TEST") and 
+            not name.endswith("_TEST") and 
+            not name.endswith("_BAK") and 
+            not name.endswith("_LOG")):
+            filtered_tables.append(name)
+    return filtered_tables
 
 # 针对单个表名生成分页Cypher
 def get_paged_query_for_table(table_name):
@@ -23,21 +33,31 @@ def get_paged_query_for_table(table_name):
     CALL {{
         // 1. 先补自己的路径
         MATCH (start:Table {{name: '{table_name}'}})
-        RETURN start.name AS startNode, coalesce(start.meta, '') AS pathStr
+        RETURN start.name AS startNode, 
+               coalesce(start.meta, '') AS pathStr,
+               start.name + '[' + coalesce(start.comment, '') + ']' AS tablePath
         UNION
         // 2. 再查最短正向路径
         MATCH (start:Table {{name: '{table_name}'}}), (end:Table)
-        WHERE start <> end
+        WHERE start <> end 
+          AND NOT end.name STARTS WITH 'DM_' 
+          AND NOT end.name STARTS WITH 'TEST'
+          AND NOT end.name ENDS WITH '_TEST'
+          AND NOT end.name ENDS WITH '_BAK'
+          AND NOT end.name ENDS WITH '_LOG'
         MATCH path = shortestPath((start)-[*..5]->(end))
         WITH start, path
         WITH start, [n IN nodes(path) | n.name] AS names, path
         WITH start, nodes(path) AS ns, relationships(path) AS rs
         WITH start, 
             [i IN range(0, size(ns)-1) | coalesce(ns[i].meta, '')] AS nodeStrs,
-            [r IN rs | ' (' + coalesce(r.from, '') + ') ' + type(r) + '(' + coalesce(r.to, '') + ') '] AS relStrs
-        RETURN start.name AS startNode, apoc.text.join([x IN range(0, size(relStrs)-1) | nodeStrs[x] + relStrs[x]] + [nodeStrs[-1]], '') AS pathStr
+            [r IN rs | ' (' + coalesce(r.from, '') + ') ' + type(r) + '(' + coalesce(r.to, '') + ') '] AS relStrs,
+            [n IN ns | n.name + '[' + coalesce(n.comment, '') + ']'] AS tableNames
+        RETURN start.name AS startNode, 
+               apoc.text.join([x IN range(0, size(relStrs)-1) | nodeStrs[x] + relStrs[x]] + [nodeStrs[-1]], '') AS pathStr,
+               apoc.text.join(tableNames, '->') AS tablePath
     }}
-    RETURN startNode, pathStr
+    RETURN startNode, pathStr, tablePath
     SKIP $skip LIMIT $limit
     """
 
@@ -68,7 +88,8 @@ def main():
                     result = session.run(paged_query, skip=skip, limit=page_size)
                     data = [dict(record) for record in result]
                     for record in data:
-                        f.write(f"{record['pathStr']}\n")
+                        # 写入路径内容和表路径
+                        f.write(f"{record['pathStr']}\t{record['tablePath']}\n")
                     table_count += len(data)
                     total_count += len(data)
                     if len(data) < page_size:

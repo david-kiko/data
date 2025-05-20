@@ -1,0 +1,6 @@
+fastapi>=0.115.12
+uvicorn>=0.24.0
+pymilvus==2.3.3
+sentence-transformers==2.2.2
+python-dotenv>=1.1.0
+fastmcp>=2.3.4 

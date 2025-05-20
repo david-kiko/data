@@ -268,11 +268,13 @@ class Neo4jImporter:
                             """
                             CREATE (t:Table {
                                 name:$name,
-                                meta:$meta
+                                meta:$meta,
+                                comment:$comment
                             })
                             """,
                             name=table.name,
-                            meta=meta
+                            meta=meta,
+                            comment=table.comment
                         )
                         written_tables.add(table.name)
                     except Exception as e:

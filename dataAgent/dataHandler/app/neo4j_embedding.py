@@ -18,14 +18,24 @@ NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD", "neo4j123")
 # Milvus connection parameters
 MILVUS_HOST = os.getenv("MILVUS_HOST", "192.168.30.232")
 MILVUS_PORT = os.getenv("MILVUS_PORT", "19530")
-COLLECTION_NAME = "neo4j_paths_embedding"
+COLLECTION_NAME = "neo4j_paths_embedding_v2"
 
 PATH_CHUNK_MAXLEN = int(os.getenv("PATH_CHUNK_MAXLEN", 2048))
 
 # 获取所有表名
 def get_all_table_names(session):
     result = session.run("MATCH (n:Table) RETURN n.name AS name")
-    return [record["name"] for record in result]
+    # 过滤掉特定前缀和后缀的表
+    filtered_tables = []
+    for record in result:
+        name = record["name"]
+        if (not name.startswith("DM_") and 
+            not name.startswith("TEST") and 
+            not name.endswith("_TEST") and 
+            not name.endswith("_BAK") and 
+            not name.endswith("_LOG")):
+            filtered_tables.append(name)
+    return filtered_tables
 
 # 针对单个表名生成分页Cypher
 def get_paged_query_for_table(table_name):
@@ -33,21 +43,31 @@ def get_paged_query_for_table(table_name):
     CALL {{
         // 1. 先补自己的路径
         MATCH (start:Table {{name: '{table_name}'}})
-        RETURN start.name AS startNode, coalesce(start.meta, '') AS pathStr
+        RETURN start.name AS startNode, 
+               coalesce(start.meta, '') AS pathStr,
+               start.name + '[' + coalesce(start.comment, '') + ']' AS tablePath
         UNION
         // 2. 再查最短正向路径
         MATCH (start:Table {{name: '{table_name}'}}), (end:Table)
-        WHERE start <> end
+        WHERE start <> end 
+          AND NOT end.name STARTS WITH 'DM_' 
+          AND NOT end.name STARTS WITH 'TEST'
+          AND NOT end.name ENDS WITH '_TEST'
+          AND NOT end.name ENDS WITH '_BAK'
+          AND NOT end.name ENDS WITH '_LOG'
         MATCH path = shortestPath((start)-[*..5]->(end))
         WITH start, path
         WITH start, [n IN nodes(path) | n.name] AS names, path
         WITH start, nodes(path) AS ns, relationships(path) AS rs
         WITH start, 
             [i IN range(0, size(ns)-1) | coalesce(ns[i].meta, '')] AS nodeStrs,
-            [r IN rs | ' (' + coalesce(r.from, '') + ') ' + type(r) + '(' + coalesce(r.to, '') + ') '] AS relStrs
-        RETURN start.name AS startNode, apoc.text.join([x IN range(0, size(relStrs)-1) | nodeStrs[x] + relStrs[x]] + [nodeStrs[-1]], '') AS pathStr
+            [r IN rs | ' (' + coalesce(r.from, '') + ') ' + type(r) + '(' + coalesce(r.to, '') + ') '] AS relStrs,
+            [n IN ns | n.name + '[' + coalesce(n.comment, '') + ']'] AS tableNames
+        RETURN start.name AS startNode, 
+               apoc.text.join([x IN range(0, size(relStrs)-1) | nodeStrs[x] + relStrs[x]] + [nodeStrs[-1]], '') AS pathStr,
+               apoc.text.join(tableNames, '->') AS tablePath
     }}
-    RETURN startNode, pathStr
+    RETURN startNode, pathStr, tablePath
     SKIP $skip LIMIT $limit
     """
 
@@ -61,11 +81,11 @@ def ensure_milvus_collection(dim):
         FieldSchema(name="id", dtype=DataType.INT64, is_primary=True, auto_id=True),
         FieldSchema(name="origin_path_id", dtype=DataType.INT64),
         FieldSchema(name="path", dtype=DataType.VARCHAR, max_length=2048),
+        FieldSchema(name="table_path", dtype=DataType.VARCHAR, max_length=2048),  # 修改为table_path
         FieldSchema(name="embedding", dtype=DataType.FLOAT_VECTOR, dim=dim)
     ]
     schema = CollectionSchema(fields, description="Neo4j paths embedding collection")
     collection = Collection(COLLECTION_NAME, schema)
-    # 不要立即 load
     return collection
 
 def split_long_path_by_bytes(path_str, max_bytes=PATH_CHUNK_MAXLEN):
@@ -90,7 +110,7 @@ def main():
         pass  # 先清空
 
     # 初始化 embedding 模型
-    model = SentenceTransformer("BAAI/bge-large-zh-v1.5")  # 1024 维
+    model = SentenceTransformer("BAAI/bge-base-zh")  # 512 维
     emb_dim = model.get_sentence_embedding_dimension()
 
     # 初始化 Milvus，导入前先清空 collection
@@ -102,7 +122,7 @@ def main():
     driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD))
     page_size = 100
     total_count = 0
-    global_row_id = 0  # 全局唯一行号
+    global_row_id = 0
     try:
         with driver.session() as session, open(long_path_file, "a", encoding="utf-8") as f_long:
             table_names = get_all_table_names(session)
@@ -122,11 +142,13 @@ def main():
                     # embedding & insert to Milvus
                     all_path_strs = []
                     all_origin_path_ids = []
-                    for path_str in [record['pathStr'] for record in data]:
-                        chunks = split_long_path_by_bytes(path_str)
+                    all_table_paths = []  # 修改为table_paths
+                    for record in data:
+                        chunks = split_long_path_by_bytes(record['pathStr'])
                         for chunk in chunks:
                             all_path_strs.append(chunk)
                             all_origin_path_ids.append(global_row_id)
+                            all_table_paths.append(record['tablePath'])  # 使用tablePath
                         global_row_id += 1
                     # 批量插入
                     if all_path_strs:
@@ -134,6 +156,7 @@ def main():
                         entities = [
                             all_origin_path_ids,
                             all_path_strs,
+                            all_table_paths,  # 修改为table_paths
                             [emb.tolist() if isinstance(emb, np.ndarray) else emb for emb in embeddings]
                         ]
                         collection.insert(entities)
