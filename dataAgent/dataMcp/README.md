@@ -10,6 +10,59 @@
 - 基于 Milvus 的向量检索
 - 支持结果重排序
 
+## 私有镜像仓库
+
+本项目包含一个基于 Docker Compose 的私有镜像仓库配置，用于存储和管理 Docker 镜像。
+
+### 1. 启动私有镜像仓库
+
+```bash
+# 创建数据目录
+mkdir -p registry-data
+
+# 启动仓库
+docker-compose up -d
+```
+
+### 2. 配置 Docker 客户端
+
+在 Linux 系统上，编辑或创建 `/etc/docker/daemon.json`：
+
+```json
+{
+  "insecure-registries": ["192.168.80.134:5000"]
+}
+```
+
+然后重启 Docker 服务：
+
+```bash
+sudo systemctl restart docker
+```
+
+### 3. 使用私有仓库
+
+```bash
+# 标记镜像
+docker tag datamcp 192.168.80.134:5000/datamcp:latest
+
+# 推送镜像
+docker push 192.168.80.134:5000/datamcp:latest
+
+# 拉取镜像
+docker pull 192.168.80.134:5000/datamcp:latest
+```
+
+### 4. 查看仓库内容
+
+```bash
+# 列出所有镜像
+curl http://192.168.80.134:5000/v2/_catalog
+
+# 列出特定镜像的标签
+curl http://192.168.80.134:5000/v2/datamcp/tags/list
+```
+
 ## 安装
 
 1. 安装 uv（如果尚未安装）：
@@ -36,16 +89,8 @@ uv pip install -r requirements.txt
 ```bash
 MILVUS_HOST=192.168.30.232
 MILVUS_PORT=19530
-```
-
-4. 下载 BAAI/bge-large-zh-v1.5
-```bash
-python -c "from sentence_transformers import SentenceTransformer; SentenceTransformer('BAAI/bge-large-zh-v1.5')"
-```
-
-5. 下载 BAAI/bge-reranker-base
-```bash
-python -c "from sentence_transformers import CrossEncoder; CrossEncoder('BAAI/bge-reranker-base')"
+RERANK_API_URL=http://192.168.80.134:9998/v1/rerank
+EMBEDDING_API_URL=http://192.168.80.134:9998/v1/embeddings
 ```
 
 ## 运行服务
@@ -69,10 +114,12 @@ docker run -d -p 8000:8000 \
   -e COLLECTION_NAME=neo4j_paths_embedding \
   -e TOP_K=5 \
   -e SQL_EXEC_URL=http://192.168.30.231:18086/api/sql/execute \
+  -e RERANK_API_URL=http://192.168.80.134:9998/v1/rerank \
+  -e EMBEDDING_API_URL=http://192.168.80.134:9998/v1/embeddings \
   datamcp
 ```
 
-- 你可以根据需要修改环境变量（如 MILVUS_HOST、COLLECTION_NAME、SQL_EXEC_URL 等）。
+- 你可以根据需要修改环境变量（如 MILVUS_HOST、COLLECTION_NAME、SQL_EXEC_URL、RERANK_API_URL、EMBEDDING_API_URL 等）。
 - 容器启动后，FastAPI 服务会监听 0.0.0.0:8000，路径为 `/docs`。
 
 #### 方式二：MCP 工具服务（streamable-http）
@@ -86,6 +133,8 @@ docker run -d -p 8000:8000 \
   -e COLLECTION_NAME=neo4j_paths_embedding \
   -e TOP_K=5 \
   -e SQL_EXEC_URL=http://192.168.30.231:18086/api/sql/execute \
+  -e RERANK_API_URL=http://192.168.80.134:9998/v1/rerank \
+  -e EMBEDDING_API_URL=http://192.168.80.134:9998/v1/embeddings \
   datamcp
 ```
 
@@ -120,10 +169,12 @@ docker run -d -p 8000:8000 \
   -e COLLECTION_NAME=neo4j_paths_embedding \
   -e TOP_K=5 \
   -e SQL_EXEC_URL=http://192.168.30.231:18086/api/sql/execute \
+  -e RERANK_API_URL=http://192.168.80.134:9998/v1/rerank \
+  -e EMBEDDING_API_URL=http://192.168.80.134:9998/v1/embeddings \
   datamcp
 ```
 
-- 你可以根据需要修改环境变量（如 MILVUS_HOST、COLLECTION_NAME、SQL_EXEC_URL 等）。
+- 你可以根据需要修改环境变量（如 MILVUS_HOST、COLLECTION_NAME、SQL_EXEC_URL、RERANK_API_URL、EMBEDDING_API_URL 等）。
 - 容器启动后，MCP 工具服务会监听 0.0.0.0:8000，路径为 `/mcp`。
 
 ## API 使用

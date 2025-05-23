@@ -203,7 +203,7 @@ class Neo4jImporter:
         tables = {}
 
         for row in rows:
-            table_name = row['TABLE_NAME']
+            table_name = row['TABLE_NAME']                
             table_comment = row['TABLE_COMMENT'] or ''
             if table_name not in tables:
                 tables[table_name] = {
@@ -285,6 +285,14 @@ class Neo4jImporter:
             with session.begin_transaction() as tx:
                 for table in tables:
                     for ref in table.references:
+                        # 过滤掉测试相关表的关系
+                        if (ref['to_table'].startswith('DM_') or 
+                            ref['to_table'].startswith('TEST') or 
+                            ref['to_table'].endswith('_TEST') or 
+                            ref['to_table'].endswith('_BAK') or 
+                            ref['to_table'].endswith('_LOG')):
+                            continue
+                            
                         try:
                             # 创建正向引用关系
                             tx.run(

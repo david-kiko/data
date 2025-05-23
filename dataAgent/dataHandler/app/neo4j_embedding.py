@@ -9,6 +9,8 @@ import os
 from pymilvus import connections, FieldSchema, CollectionSchema, DataType, Collection, utility
 from sentence_transformers import SentenceTransformer
 import numpy as np
+import httpx
+import asyncio
 
 # Neo4j connection parameters
 NEO4J_URI = os.getenv("NEO4J_URI", "bolt://192.168.30.232:7687")
@@ -18,9 +20,49 @@ NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD", "neo4j123")
 # Milvus connection parameters
 MILVUS_HOST = os.getenv("MILVUS_HOST", "192.168.30.232")
 MILVUS_PORT = os.getenv("MILVUS_PORT", "19530")
-COLLECTION_NAME = "neo4j_paths_embedding_v2"
+COLLECTION_NAME = "neo4j_paths_embedding_v3"
 
-PATH_CHUNK_MAXLEN = int(os.getenv("PATH_CHUNK_MAXLEN", 2048))
+PATH_CHUNK_MAXLEN = int(os.getenv("PATH_CHUNK_MAXLEN", 4096))
+EMBEDDING_API_URL = os.getenv("EMBEDDING_API_URL", "http://192.168.80.134:9998/v1/embeddings")
+
+# 初始化模型
+model = SentenceTransformer("BAAI/bge-large-zh-v1.5")
+
+async def get_embeddings(texts: list, is_local: bool = False) -> list:
+    """
+    获取文本的embedding向量
+    
+    Args:
+        texts: 文本列表
+        is_local: 是否使用本地模型，True使用本地模型，False使用远程API
+        
+    Returns:
+        list: embedding向量列表
+    """
+    if is_local:
+        embeddings = model.encode(texts, show_progress_bar=False)
+        return [emb.tolist() if isinstance(emb, np.ndarray) else emb for emb in embeddings]
+    else:
+        try:
+            async with httpx.AsyncClient(timeout=30) as client:
+                response = await client.post(
+                    EMBEDDING_API_URL,
+                    json={
+                        "input": texts,
+                        "model": "bge-large-zh-v1.5"
+                    }
+                )
+                response.raise_for_status()
+                result = response.json()
+                if "data" in result:
+                    # 按index排序结果，确保顺序与输入一致
+                    sorted_results = sorted(result["data"], key=lambda x: x["index"])
+                    return [item["embedding"] for item in sorted_results]
+                else:
+                    raise ValueError("Unexpected API response format")
+        except Exception as e:
+            print(f"Error calling embedding API: {str(e)}")
+            raise
 
 # 获取所有表名
 def get_all_table_names(session):
@@ -44,8 +86,7 @@ def get_paged_query_for_table(table_name):
         // 1. 先补自己的路径
         MATCH (start:Table {{name: '{table_name}'}})
         RETURN start.name AS startNode, 
-               coalesce(start.meta, '') AS pathStr,
-               start.name + '[' + coalesce(start.comment, '') + ']' AS tablePath
+               coalesce(start.meta, '') AS pathStr
         UNION
         // 2. 再查最短正向路径
         MATCH (start:Table {{name: '{table_name}'}}), (end:Table)
@@ -61,13 +102,11 @@ def get_paged_query_for_table(table_name):
         WITH start, nodes(path) AS ns, relationships(path) AS rs
         WITH start, 
             [i IN range(0, size(ns)-1) | coalesce(ns[i].meta, '')] AS nodeStrs,
-            [r IN rs | ' (' + coalesce(r.from, '') + ') ' + type(r) + '(' + coalesce(r.to, '') + ') '] AS relStrs,
-            [n IN ns | n.name + '[' + coalesce(n.comment, '') + ']'] AS tableNames
+            [r IN rs | ' (' + coalesce(r.from, '') + ') ' + type(r) + '(' + coalesce(r.to, '') + ') '] AS relStrs
         RETURN start.name AS startNode, 
-               apoc.text.join([x IN range(0, size(relStrs)-1) | nodeStrs[x] + relStrs[x]] + [nodeStrs[-1]], '') AS pathStr,
-               apoc.text.join(tableNames, '->') AS tablePath
+               apoc.text.join([x IN range(0, size(relStrs)-1) | nodeStrs[x] + relStrs[x]] + [nodeStrs[-1]], '') AS pathStr
     }}
-    RETURN startNode, pathStr, tablePath
+    RETURN startNode, pathStr
     SKIP $skip LIMIT $limit
     """
 
@@ -80,8 +119,7 @@ def ensure_milvus_collection(dim):
     fields = [
         FieldSchema(name="id", dtype=DataType.INT64, is_primary=True, auto_id=True),
         FieldSchema(name="origin_path_id", dtype=DataType.INT64),
-        FieldSchema(name="path", dtype=DataType.VARCHAR, max_length=2048),
-        FieldSchema(name="table_path", dtype=DataType.VARCHAR, max_length=2048),  # 修改为table_path
+        FieldSchema(name="path", dtype=DataType.VARCHAR, max_length=4096),
         FieldSchema(name="embedding", dtype=DataType.FLOAT_VECTOR, dim=dim)
     ]
     schema = CollectionSchema(fields, description="Neo4j paths embedding collection")
@@ -103,20 +141,23 @@ def split_long_path_by_bytes(path_str, max_bytes=PATH_CHUNK_MAXLEN):
         start = end
     return chunks
 
-def main():
+async def main():
     # 超长路径输出文件
     long_path_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "long_paths.txt")
-    with open(long_path_file, "w", encoding="utf-8") as f_long:
-        pass  # 先清空
-
-    # 初始化 embedding 模型
-    model = SentenceTransformer("BAAI/bge-base-zh")  # 512 维
-    emb_dim = model.get_sentence_embedding_dimension()
+    all_paths_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), "all_paths.txt")
+    
+    # 清空文件
+    with open(long_path_file, "w", encoding="utf-8") as f_long, \
+         open(all_paths_file, "w", encoding="utf-8") as f_all:
+        pass
 
     # 初始化 Milvus，导入前先清空 collection
     connections.connect("default", host=MILVUS_HOST, port=MILVUS_PORT)
     if COLLECTION_NAME in utility.list_collections():
         Collection(COLLECTION_NAME).drop()
+    
+    # 获取embedding维度
+    emb_dim = model.get_sentence_embedding_dimension()
     collection = ensure_milvus_collection(emb_dim)
 
     driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD))
@@ -124,7 +165,9 @@ def main():
     total_count = 0
     global_row_id = 0
     try:
-        with driver.session() as session, open(long_path_file, "a", encoding="utf-8") as f_long:
+        with driver.session() as session, \
+             open(long_path_file, "a", encoding="utf-8") as f_long, \
+             open(all_paths_file, "a", encoding="utf-8") as f_all:
             table_names = get_all_table_names(session)
             num_tables = len(table_names)
             print(f"Found {num_tables} tables.")
@@ -139,25 +182,25 @@ def main():
                     data = [dict(record) for record in result]
                     if not data:
                         break
+                    # 写入所有路径到文件，只写入pathStr
+                    for record in data:
+                        f_all.write(f"{record['pathStr']}\n")
                     # embedding & insert to Milvus
                     all_path_strs = []
                     all_origin_path_ids = []
-                    all_table_paths = []  # 修改为table_paths
                     for record in data:
                         chunks = split_long_path_by_bytes(record['pathStr'])
                         for chunk in chunks:
                             all_path_strs.append(chunk)
                             all_origin_path_ids.append(global_row_id)
-                            all_table_paths.append(record['tablePath'])  # 使用tablePath
                         global_row_id += 1
                     # 批量插入
                     if all_path_strs:
-                        embeddings = model.encode(all_path_strs, show_progress_bar=False)
+                        embeddings = await get_embeddings(all_path_strs, is_local=False)
                         entities = [
                             all_origin_path_ids,
                             all_path_strs,
-                            all_table_paths,  # 修改为table_paths
-                            [emb.tolist() if isinstance(emb, np.ndarray) else emb for emb in embeddings]
+                            embeddings
                         ]
                         collection.insert(entities)
                         table_count += len(all_path_strs)
@@ -180,4 +223,4 @@ def main():
     print(f"All paths embedded and inserted into Milvus collection '{COLLECTION_NAME}'.")
 
 if __name__ == "__main__":
-    main() 
+    asyncio.run(main()) 
