@@ -4,7 +4,6 @@ from typing import Optional
 import json
 import asyncio
 from .search import search_and_aggregate
-from .search_v2 import search_and_aggregate as search_and_aggregate_v2
 from fastmcp import FastMCP
 import requests
 import httpx
@@ -98,29 +97,6 @@ async def execute_sql(sql: str, limit: int = 20):
             }
         )
 
-# @mcp.tool()
-# async def search_v2(query: str, top_k: int = 10, is_local: bool = False, use_keywords: bool = True):
-#     """在元数据中搜索用户问题，返回与问题相似性最相关的元数据表结构（v2版本）
-    
-#     Args:
-#         query: 查询文本
-#         top_k: 返回结果数量
-#         is_local: 是否使用本地重排序模型，True使用本地模型，False使用API
-#         use_keywords: 是否使用关键词提取，True则提取关键词后再embedding，False则直接对原始查询做embedding
-        
-#     Returns:
-#         list[str]: 返回path字符串列表
-#     """
-#     logger.info(f"MCP search_v2 called with params: query='{query}', top_k={top_k}, is_local={is_local}, use_keywords={use_keywords}")
-#     results = []
-#     async for path in search_and_aggregate_v2(query, top_k, is_local, use_keywords):
-#         results.append(path)
-#     return results
-
-# @mcp.tool()
-# async def health_check():
-#     return {"status": "ok", "version": "1.0.0"}
-
 # FastAPI路由：流式响应
 @app.get("/search")
 async def search_stream(
@@ -138,27 +114,6 @@ async def search_stream(
         async for path in search_and_aggregate(query, top_k):
             yield json.dumps({"path": path}, ensure_ascii=False) + '\n'
     return StreamingResponse(generate(), media_type="application/x-ndjson")
-
-# @app.get("/search/v2")
-# async def search_stream_v2(
-#     query: str, 
-#     top_k: int = 10,
-#     is_local: bool = False,
-#     use_keywords: bool = True
-# ):
-#     """流式搜索接口（v2版本）
-    
-#     Args:
-#         query: 查询文本
-#         top_k: 返回结果数量
-#         is_local: 是否使用本地重排序模型，True使用本地模型，False使用API
-#         use_keywords: 是否使用关键词提取，True则提取关键词后再embedding，False则直接对原始查询做embedding
-#     """
-#     logger.info(f"HTTP search_stream_v2 called with params: query='{query}', top_k={top_k}, is_local={is_local}, use_keywords={use_keywords}")
-#     async def generate():
-#         async for path in search_and_aggregate_v2(query, top_k, is_local, use_keywords):
-#             yield json.dumps({"path": path}, ensure_ascii=False) + '\n'
-#     return StreamingResponse(generate(), media_type="application/x-ndjson")
 
 @app.get("/health")
 async def health():

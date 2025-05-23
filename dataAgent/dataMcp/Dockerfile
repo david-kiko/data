@@ -7,9 +7,7 @@ WORKDIR /app
 COPY requirements.txt ./
 
 # 安装uv并用清华源加速
-RUN curl -Ls https://astral.sh/uv/install.sh | sh
-ENV PATH="/root/.local/bin:${PATH}"
-RUN uv pip install --system -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+RUN pip install -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
 
 COPY . .
 
