@@ -116,7 +116,7 @@ class Neo4jImporter:
                 self.foreign_key_cache[from_table].append({
                     'from_column': row['COLUMN_NAME'],
                     'to_table': row['RTABLE'],
-                    'to_column': 'CCODE'  # 默认引用CCODE字段
+                    'to_column': 'CID'  # 默认引用CCODE字段
                 })
             
             logger.info(f"处理后的外键关系总数: {sum(len(refs) for refs in self.foreign_key_cache.values())}")

@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Query, HTTPException
 from fastapi.responses import StreamingResponse
-from typing import Optional
+from typing import Optional, List
 import json
 import asyncio
 from .search import search_and_aggregate
@@ -9,10 +9,16 @@ import requests
 import httpx
 import os
 import logging
+from neo4j import GraphDatabase
 
 # 配置日志
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
+
+# Neo4j connection parameters
+NEO4J_URI = os.getenv("NEO4J_URI", "bolt://192.168.30.232:7687")
+NEO4J_USER = os.getenv("NEO4J_USER", "neo4j")
+NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD", "neo4j123")
 
 # FastAPI app for HTTP路由
 app = FastAPI()
@@ -37,6 +43,42 @@ async def search(query: str, top_k: int = 10):
     async for path in search_and_aggregate(query, top_k):
         results.append(path)
     return results
+
+@mcp.tool()
+async def get_relationship() -> list[str]:
+    """获取表之间的关系，返回格式为 ["A(字段名) references B(字段名)"] 的数组
+    
+    Returns:
+        list[str]: 关系数组，每个元素格式为 "A(字段名) references B(字段名)"
+    """
+    logger.info(f"MCP get_relationship called (no params)")
+    
+    driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD))
+    
+    try:
+        with driver.session() as session:
+            query = """
+            MATCH (a:Table)-[r:REFERENCES]->(b:Table)
+            RETURN a.name AS source_table, r.from AS source_field,
+                   b.name AS target_table, r.to AS target_field
+            """
+            result = session.run(query)
+            relationships = []
+            for record in result:
+                rel = f"{record['source_table']}({record['source_field']}) references {record['target_table']}({record['target_field']})"
+                relationships.append(rel)
+            return relationships
+    except Exception as e:
+        logger.error(f"Error getting relationships: {str(e)}")
+        raise HTTPException(
+            status_code=500,
+            detail={
+                "error": f"获取表关系失败: {str(e)}",
+                "type": "database_error"
+            }
+        )
+    finally:
+        driver.close()
 
 @mcp.tool()
 async def execute_sql(sql: str, limit: int = 20):
