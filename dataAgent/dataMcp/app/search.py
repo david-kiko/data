@@ -1,11 +1,9 @@
 import os
 from pymilvus import connections, Collection
 import numpy as np
-from typing import AsyncGenerator, Dict, Any
+from typing import AsyncGenerator
 import time
-from sentence_transformers import SentenceTransformer, CrossEncoder
 import httpx
-import torch
 from contextlib import contextmanager
 import json
 import logging
@@ -16,14 +14,11 @@ MILVUS_PORT = os.getenv("MILVUS_PORT", "19530")
 COLLECTION_NAME = "neo4j_paths_embedding_v4"  # 更新为新的collection名称
 TOP_K = 10  # 检索topK个最相似chunk
 RERANK_API_URL = os.getenv("RERANK_API_URL", "http://192.168.80.134:9998/v1/rerank")
+EMBEDDING_API_URL = os.getenv("EMBEDDING_API_URL", "http://192.168.80.134:9998/v1/embeddings")
 
 # 初始化日志
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-# 初始化模型
-embedding_model = SentenceTransformer('BAAI/bge-large-zh-v1.5')
-# reranker_model = CrossEncoder('BAAI/bge-reranker-base')
 
 # 连接池配置
 MILVUS_POOL_SIZE = 20  # 连接池大小
@@ -40,6 +35,37 @@ def get_milvus_connection():
     finally:
         # 不主动断开连接，让连接池管理
         pass
+
+async def get_embeddings(texts: list) -> list:
+    """
+    获取文本的embedding向量
+    
+    Args:
+        texts: 文本列表
+        
+    Returns:
+        list: embedding向量列表
+    """
+    try:
+        async with httpx.AsyncClient(timeout=30) as client:
+            response = await client.post(
+                EMBEDDING_API_URL,
+                json={
+                    "input": texts,
+                    "model": "bge-large-zh-v1.5"
+                }
+            )
+            response.raise_for_status()
+            result = response.json()
+            if "data" in result:
+                # 按index排序结果，确保顺序与输入一致
+                sorted_results = sorted(result["data"], key=lambda x: x["index"])
+                return [item["embedding"] for item in sorted_results]
+            else:
+                raise ValueError("Unexpected API response format")
+    except Exception as e:
+        logger.error(f"Error calling embedding API: {str(e)}")
+        raise
 
 async def search_and_aggregate(query: str, top_k: int = TOP_K, table_filter: str = None, path_filter: str = None, return_fields: list = ["path"]) -> AsyncGenerator[str, None]:
     """
@@ -59,7 +85,8 @@ async def search_and_aggregate(query: str, top_k: int = TOP_K, table_filter: str
     
     # 1. embedding
     start = time.time()
-    query_emb = embedding_model.encode(query)
+    embeddings = await get_embeddings([query])
+    query_emb = embeddings[0]
     print(f"[计时] embedding: {time.time() - start:.3f}s")
 
     # 2. 连接Milvus（使用连接池）
@@ -73,7 +100,7 @@ async def search_and_aggregate(query: str, top_k: int = TOP_K, table_filter: str
         start = time.time()
         search_params = {"metric_type": "L2", "params": {"nprobe": 512}}  # 使用 L2 距离作为相似度度量
         results = collection.search(
-            data=[query_emb.tolist()],
+            data=[query_emb],
             anns_field="embedding",
             param=search_params,
             limit=top_k * 10,  # 扩大检索范围，确保覆盖全部chunk
