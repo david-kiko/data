@@ -1,0 +1,4 @@
+Table MOM_INSPECT_TASK has 2 chunks
+Table MOM_MANU_ORDER has 2 chunks
+Table MOM_MANU_TASK has 2 chunks
+Table MOM_PROD_ORDER has 2 chunks

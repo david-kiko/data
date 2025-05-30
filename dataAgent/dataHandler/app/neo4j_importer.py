@@ -74,41 +74,53 @@ class Neo4jImporter:
 
     def fetch_foreign_key_data(self) -> None:
         """获取外键数据并缓存"""
-        sql_basic = """
-        select t1.CCOLUMN_NAME AS COLUMN_NAME, t2.CTABLE_NAME AS CTABLE, t3.CTABLE_NAME AS RTABLE 
-        from KMMOM.DM_TYPE_DEFINITION_PROPERTY t1 
-        JOIN KMMOM.DM_TYPE_DEFINITION t2 ON t1.CTYPE_ENTITY_TYPE = t2.CCODE 
-        JOIN KMMOM.DM_TYPE_DEFINITION t3 ON t1.CREFERENCE_TYPE = t3.CCODE 
-        WHERE t1.CREFERENCE_TYPE IS NOT NULL AND t2.CTABLE_NAME IS NOT NULL AND t3.CTABLE_NAME IS NOT null
-        """
-        sql_additional = """
-        SELECT dtc.TABLE_NAME AS CTABLE, dtc.COLUMN_NAME AS COLUMN_NAME, def.CTABLE_NAME AS RTABLE 
-        FROM DBA_TAB_COLUMNS dtc 
-        JOIN (select t2.CCOLUMN_NAME || '_ID' AS COLUMN_NAME, t2.CREFERENCE_TYPE AS CREFERENCE_TYPE 
-        FROM KMMOM.DM_TYPE_DEFINITION t1 
-        join KMMOM.DM_TYPE_DEFINITION_PROPERTY t2 ON t1.CCODE = t2.CTYPE_ENTITY_TYPE 
-        WHERE T1.CTABLE_NAME IS NULL AND t2.CREFERENCE_TYPE IS NOT NULL) mom_v 
-        ON dtc.COLUMN_NAME = mom_v.COLUMN_NAME 
-        JOIN KMMOM.DM_TYPE_DEFINITION def ON mom_v.CREFERENCE_TYPE = def.CCODE 
-        WHERE dtc.OWNER = 'KMMOM' 
-        ORDER BY dtc.TABLE_NAME asc
+        sql = """
+        SELECT CTABLE, COLUMN_NAME, RTABLE
+        FROM (
+            -- 第一个查询：基础外键关系
+            SELECT 
+                t2.CTABLE_NAME AS CTABLE, 
+                t1.CCOLUMN_NAME || '_ID' AS COLUMN_NAME, 
+                t3.CTABLE_NAME AS RTABLE 
+            FROM KMMOM.DM_TYPE_DEFINITION_PROPERTY t1 
+            JOIN KMMOM.DM_TYPE_DEFINITION t2 ON t1.CTYPE_ENTITY_TYPE = t2.CCODE 
+            JOIN KMMOM.DM_TYPE_DEFINITION t3 ON t1.CREFERENCE_TYPE = t3.CCODE 
+            WHERE t1.CREFERENCE_TYPE IS NOT NULL 
+                AND t2.CTABLE_NAME IS NOT NULL 
+                AND t3.CTABLE_NAME IS NOT NULL
+
+            UNION DISTINCT
+
+            -- 第二个查询：额外外键关系
+            SELECT 
+                dtc.TABLE_NAME AS CTABLE, 
+                dtc.COLUMN_NAME AS COLUMN_NAME, 
+                def.CTABLE_NAME AS RTABLE 
+            FROM DBA_TAB_COLUMNS dtc 
+            JOIN (
+                SELECT 
+                    t2.CCOLUMN_NAME || '_ID' AS COLUMN_NAME, 
+                    t2.CREFERENCE_TYPE AS CREFERENCE_TYPE 
+                FROM KMMOM.DM_TYPE_DEFINITION t1 
+                JOIN KMMOM.DM_TYPE_DEFINITION_PROPERTY t2 ON t1.CCODE = t2.CTYPE_ENTITY_TYPE 
+                WHERE T1.CTABLE_NAME IS NULL 
+                    AND t2.CREFERENCE_TYPE IS NOT NULL
+            ) mom_v ON dtc.COLUMN_NAME = mom_v.COLUMN_NAME 
+            JOIN KMMOM.DM_TYPE_DEFINITION def ON mom_v.CREFERENCE_TYPE = def.CCODE 
+            WHERE dtc.OWNER = 'KMMOM'
+        )
+        ORDER BY CTABLE ASC
         """
         try:
-            # 获取基本外键数据
-            response_basic = requests.post(API_URL, json={"sql": sql_basic}, headers=API_HEADERS)
-            response_basic.raise_for_status()
-            rows_basic = json.loads(response_basic.text)
-            logger.info(f"获取到基本外键数据: {len(rows_basic)} 条")
+            # 获取外键数据
+            response = requests.post(API_URL, json={"sql": sql}, headers=API_HEADERS)
+            response.raise_for_status()
+            rows = json.loads(response.text)
+            logger.info(f"获取到外键数据: {len(rows)} 条")
 
-            # 获取额外外键数据
-            response_additional = requests.post(API_URL, json={"sql": sql_additional}, headers=API_HEADERS)
-            response_additional.raise_for_status()
-            rows_additional = json.loads(response_additional.text)
-            logger.info(f"获取到额外外键数据: {len(rows_additional)} 条")
-
-            # 合并并处理外键数据
+            # 处理外键数据
             self.foreign_key_cache = {}
-            for row in rows_basic + rows_additional:
+            for row in rows:
                 from_table = row['CTABLE']
                 if from_table not in self.foreign_key_cache:
                     self.foreign_key_cache[from_table] = []
@@ -311,7 +323,8 @@ class Neo4jImporter:
                                 to_column=ref['to_column']
                             )
                             
-                            # 创建反向引用关系
+                            # 创建反向引用关系（已注释）
+                            '''
                             tx.run(
                                 """
                                 MATCH (from:Table {name: $from_table})
@@ -327,6 +340,7 @@ class Neo4jImporter:
                                 from_column=ref['from_column'],
                                 to_column=ref['to_column']
                             )
+                            '''
                         except Exception as e:
                             logger.error(f"创建关系失败 {table.name} -> {ref['to_table']}: {e}")
                             continue

@@ -13,8 +13,9 @@ MILVUS_HOST = os.getenv("MILVUS_HOST", "192.168.30.232")
 MILVUS_PORT = os.getenv("MILVUS_PORT", "19530")
 COLLECTION_NAME = "neo4j_paths_embedding_v4"  # 更新为新的collection名称
 TOP_K = 10  # 检索topK个最相似chunk
-RERANK_API_URL = os.getenv("RERANK_API_URL", "http://192.168.80.134:9998/v1/rerank")
-EMBEDDING_API_URL = os.getenv("EMBEDDING_API_URL", "http://192.168.80.134:9998/v1/embeddings")
+RERANK_API_URL = "https://api.siliconflow.cn/v1/rerank"
+EMBEDDING_API_URL = "https://api.siliconflow.cn/v1/embeddings"
+API_KEY = "sk-vtnuqpakabawcslqxbiqijqxqznyaswlyovjdcnqjnefrndg"
 
 # 初始化日志
 logging.basicConfig(level=logging.INFO)
@@ -50,9 +51,14 @@ async def get_embeddings(texts: list) -> list:
         async with httpx.AsyncClient(timeout=30) as client:
             response = await client.post(
                 EMBEDDING_API_URL,
+                headers={
+                    "Authorization": f"Bearer {API_KEY}",
+                    "Content-Type": "application/json"
+                },
                 json={
+                    "model": "Pro/BAAI/bge-m3",
                     "input": texts,
-                    "model": "bge-large-zh-v1.5"
+                    "encoding_format": "float"
                 }
             )
             response.raise_for_status()
@@ -139,12 +145,20 @@ async def search_and_aggregate(query: str, top_k: int = TOP_K, table_filter: str
             print(f"[重排] 开始调用重排API，候选数量: {len(table_metas)}")
             async with httpx.AsyncClient(timeout=30) as client:
                 request_data = {
-                    "model": "bge-reranker-large",
+                    "model": "BAAI/bge-reranker-v2-m3",
                     "query": query,
-                    "documents": [item["meta"] for item in table_metas.values()]
+                    "documents": [item["meta"] for item in table_metas.values()],
+                    "top_n": len(table_metas),
+                    "return_documents": False,
+                    "max_chunks_per_doc": 1024,
+                    "overlap_tokens": 80
                 }
                 response = await client.post(
                     RERANK_API_URL,
+                    headers={
+                        "Authorization": f"Bearer {API_KEY}",
+                        "Content-Type": "application/json"
+                    },
                     json=request_data
                 )
                 response.raise_for_status()

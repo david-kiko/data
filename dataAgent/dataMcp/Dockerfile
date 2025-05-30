@@ -13,10 +13,12 @@ COPY . .
 
 ENV MILVUS_HOST=192.168.30.232
 ENV MILVUS_PORT=19530
-ENV COLLECTION_NAME=neo4j_paths_embedding
+ENV COLLECTION_NAME=neo4j_paths_embedding_v4
 ENV TOP_K=5
 ENV SQL_EXEC_URL=http://192.168.30.232:18086/api/sql/execute/v2
-ENV RERANK_API_URL=http://192.168.80.134:9998/v1/rerank
-ENV EMBEDDING_API_URL=http://192.168.80.134:9998/v1/embeddings
 
-CMD ["python", "-m", "app.main"] 
+# 添加执行权限
+RUN chmod +x start.sh
+
+# 启动MCP服务
+CMD ["./start.sh"] 

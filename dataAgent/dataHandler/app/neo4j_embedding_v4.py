@@ -7,7 +7,6 @@ logging.getLogger("neo4j").setLevel(logging.ERROR)
 from neo4j import GraphDatabase
 import os
 from pymilvus import connections, FieldSchema, CollectionSchema, DataType, Collection, utility
-from sentence_transformers import SentenceTransformer
 import numpy as np
 import httpx
 import asyncio
@@ -22,34 +21,39 @@ MILVUS_HOST = os.getenv("MILVUS_HOST", "192.168.30.232")
 MILVUS_PORT = os.getenv("MILVUS_PORT", "19530")
 COLLECTION_NAME = "neo4j_paths_embedding_v4"
 
-PATH_CHUNK_MAXLEN = int(os.getenv("PATH_CHUNK_MAXLEN", 4096))
-EMBEDDING_API_URL = os.getenv("EMBEDDING_API_URL", "http://192.168.80.134:9998/v1/embeddings")
+PATH_CHUNK_MAXLEN = int(os.getenv("PATH_CHUNK_MAXLEN", 2048))
+EMBEDDING_API_URL = "https://api.siliconflow.cn/v1/embeddings"
+API_KEY = "sk-vtnuqpakabawcslqxbiqijqxqznyaswlyovjdcnqjnefrndg"
 
-# 初始化模型
-model = SentenceTransformer("BAAI/bge-large-zh-v1.5")
-
-async def get_embeddings(texts: list, is_local: bool = False) -> list:
+async def get_embeddings(texts: list, batch_size: int = 8) -> list:
     """
-    获取文本的embedding向量
+    获取文本的embedding向量，分批处理以避免请求过大
     
     Args:
         texts: 文本列表
-        is_local: 是否使用本地模型，True使用本地模型，False使用远程API
+        batch_size: 每批处理的文本数量，默认8个
         
     Returns:
         list: embedding向量列表
     """
-    if is_local:
-        embeddings = model.encode(texts, show_progress_bar=False)
-        return [emb.tolist() if isinstance(emb, np.ndarray) else emb for emb in embeddings]
-    else:
+    all_embeddings = []
+    total_batches = (len(texts) + batch_size - 1) // batch_size  # 向上取整
+    for i in range(0, len(texts), batch_size):
+        batch_texts = texts[i:i + batch_size]
+        current_batch = i // batch_size + 1
+        print(f"Processing batch {current_batch}/{total_batches} ({len(batch_texts)} texts)...")
         try:
             async with httpx.AsyncClient(timeout=30) as client:
                 response = await client.post(
                     EMBEDDING_API_URL,
+                    headers={
+                        "Authorization": f"Bearer {API_KEY}",
+                        "Content-Type": "application/json"
+                    },
                     json={
-                        "input": texts,
-                        "model": "bge-large-zh-v1.5"
+                        "model": "Pro/BAAI/bge-m3",
+                        "input": batch_texts,
+                        "encoding_format": "float"
                     }
                 )
                 response.raise_for_status()
@@ -57,12 +61,15 @@ async def get_embeddings(texts: list, is_local: bool = False) -> list:
                 if "data" in result:
                     # 按index排序结果，确保顺序与输入一致
                     sorted_results = sorted(result["data"], key=lambda x: x["index"])
-                    return [item["embedding"] for item in sorted_results]
+                    batch_embeddings = [item["embedding"] for item in sorted_results]
+                    all_embeddings.extend(batch_embeddings)
+                    print(f"Batch {current_batch} completed successfully.")
                 else:
                     raise ValueError("Unexpected API response format")
         except Exception as e:
-            print(f"Error calling embedding API: {str(e)}")
+            print(f"Error calling embedding API for batch {current_batch}: {str(e)}")
             raise
+    return all_embeddings
 
 # 获取所有表名
 def get_all_table_names(session):
@@ -126,8 +133,8 @@ async def main():
     if COLLECTION_NAME in utility.list_collections():
         Collection(COLLECTION_NAME).drop()
     
-    # 获取embedding维度
-    emb_dim = model.get_sentence_embedding_dimension()
+    # 获取embedding维度（BGE-large-zh-v1.5的维度是1024）
+    emb_dim = 1024
     collection = ensure_milvus_collection(emb_dim)
 
     driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD))
@@ -169,7 +176,9 @@ async def main():
             
             # 批量插入
             if all_meta_texts:
-                embeddings = await get_embeddings(all_meta_texts, is_local=False)
+                print(f"Getting embeddings for {len(all_meta_texts)} chunks...")
+                embeddings = await get_embeddings(all_meta_texts)
+                print(f"Got {len(embeddings)} embeddings.")
                 entities = [
                     all_table_names,
                     all_meta_texts,

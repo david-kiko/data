@@ -1,6 +1,5 @@
 from fastapi import FastAPI, Query, HTTPException
-from fastapi.responses import StreamingResponse
-from typing import Optional, List
+from typing import Optional, List, Dict, Any
 import json
 import asyncio
 from .search import search_and_aggregate
@@ -139,23 +138,55 @@ async def execute_sql(sql: str, limit: int = 20):
             }
         )
 
-# FastAPI路由：流式响应
+# FastAPI路由：搜索接口
 @app.get("/search")
-async def search_stream(
+async def search_endpoint(
     query: str, 
     top_k: int = 10
-):
-    """流式搜索接口
+) -> List[str]:
+    """搜索接口
     
     Args:
         query: 查询文本
         top_k: 返回结果数量
+        
+    Returns:
+        List[str]: 返回path字符串列表
     """
-    logger.info(f"HTTP search_stream called with params: query='{query}', top_k={top_k}")
-    async def generate():
-        async for path in search_and_aggregate(query, top_k):
-            yield json.dumps({"path": path}, ensure_ascii=False) + '\n'
-    return StreamingResponse(generate(), media_type="application/x-ndjson")
+    logger.info(f"HTTP search called with params: query='{query}', top_k={top_k}")
+    results = []
+    async for path in search_and_aggregate(query, top_k):
+        results.append(path)
+    return results
+
+# FastAPI路由：获取表关系接口
+@app.get("/relationships")
+async def get_relationships_endpoint() -> List[str]:
+    """获取表关系接口
+    
+    Returns:
+        List[str]: 关系数组，每个元素格式为 "A(字段名) references B(字段名)"
+    """
+    logger.info("HTTP get_relationships called")
+    return await get_relationship()
+
+# FastAPI路由：执行SQL接口
+@app.post("/execute-sql")
+async def execute_sql_endpoint(
+    sql: str,
+    limit: int = 20
+) -> Dict[str, Any]:
+    """执行SQL接口
+    
+    Args:
+        sql: 要执行的SQL语句
+        limit: 返回结果的最大条数，默认为20，-1表示不限制条数
+        
+    Returns:
+        Dict[str, Any]: 包含执行结果或错误信息的字典
+    """
+    logger.info(f"HTTP execute_sql called with SQL: {sql}, limit: {limit}")
+    return await execute_sql(sql, limit)
 
 @app.get("/health")
 async def health():
@@ -164,4 +195,4 @@ async def health():
 
 if __name__ == "__main__":
     logger.info("Starting MCP server...")
-    mcp.run(transport="streamable-http", host="0.0.0.0", port=8000, path="/mcp") 
+    mcp.run(transport="streamable-http", host="0.0.0.0", port=8000, path="/mcp")
